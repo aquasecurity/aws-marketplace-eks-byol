@@ -1,0 +1,32 @@
+
+!!! PLEASE READ THE FOLLOWING INSTRUCTION, FAILING TO DO SO MAY LEAD TO DATA LOSS !!!
+  Note: This instructions require installing the AWS cli and jq.
+
+There are four secrets generated: `admin password, database password, enforcer token` and `registry auth` which is used by the docker pull service account.
+
+In the case of a re-deploy, reloading secrets will be necessary to access the database files on the reused PVC. It is Very Important to back up the database password secret for this purpose.
+  Please do so NOW:
+
+  kubectl get secrets -l secretType=aquaSecurity \
+  --namespace {{ .Release.Namespace }} -o json > aquaSecrets.json
+
+It will take anywhere from 5-10 minutes for the Aqua Console to become available. 
+You may view status of the ELB service registrations in the AWS EC2 console, or with these commands:
+
+  EKSELB=$(kubectl get svc {{ .Release.Name }}-aqua-console --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"|sed 's/-.*//')
+  
+  aws elb describe-instance-health --load-balancer-name $EKSELB
+
+After the `InstanceStates.State` changes to `InService` you may obtain the DNS name of the Aqua Console UI with the following commands:
+
+  AQUA_CONSOLE=$(kubectl get svc {{ .Release.Name }}-aqua-console --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+  
+  ECHO "http://$AQUA_CONSOLE:8080"
+
+The administrator password for the Aqua Console has been set via a k8s secret. To obtain this password use the following command:
+
+  kubectl get secret {{ .Release.Name }}-admin-password --namespace {{ .Release.Namespace }} -o json | jq -r .data.password | base64 -D 
+
+More details in this repo's README.md and at https://cloud-market-docs.aquasec.com
+
+!!! PLEASE BACK UP YOUR SECRETS NOW. FAILING TO DO SO MAY LEAD TO DATA LOSS !!!

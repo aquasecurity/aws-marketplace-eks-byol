@@ -1,0 +1,15 @@
+# This yaml creates a prerequsite for the Aqua components. It is written as a pre-install hook. 
+# A pre-install hook is run before the rest of the chart is loaded.
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: gp2
+  annotations:
+    "helm.sh/hook": pre-install
+    "storageclass.kubernetes.io/is-default-class": "true"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Retain
+mountOptions:
+  - debug

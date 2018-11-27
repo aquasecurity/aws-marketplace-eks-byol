@@ -1,0 +1,15 @@
+global:
+# Please edit imageCredentials section to match the credentials that have been granted access to the Aqua private repository
+  imageCredentials:
+    registry: "registry.aquasec.com"
+    username: ""
+    password: ""
+# imageTag overrides the version number for all the Aqua components
+  imageTag: "3.5.rc9"
+  imagePullPolicy: "Always"
+#If dbExternalServiceHost is empty, an Aqua provided database will be created from the Helm chart. Otherwise specify the address of the external database.
+  dbExternalServiceHost:
+# Overrides the database service port in the case an external database is in use
+  dbServicePort: "5432"
+# If aquaLicenseToken is empty, the system will prompt for a license upon first startup. Enter your Aqua license token here if you have one.
+  aquaLicenseToken: ""

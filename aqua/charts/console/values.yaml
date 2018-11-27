@@ -1,0 +1,5 @@
+# console is the Aqua server component
+console:
+  image: "registry.aquasec.com/console"
+  servicePort: 8080
+  containerPort: 8080

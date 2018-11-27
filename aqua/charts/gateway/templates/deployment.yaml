@@ -1,0 +1,61 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    component: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+      name: {{ template "fullname" . }}
+    spec:
+      serviceAccount: {{ .Release.Name }}-sa
+      containers:
+      - name: {{ template "fullname" . }}
+        image: "{{.Values.global.imageCredentials.registry}}/gateway:{{.Values.global.imageTag}}"
+        imagePullPolicy: {{.Values.global.imagePullPolicy}}
+        env:
+          - name: SCALOCK_GATEWAY_PUBLIC_IP
+            value: {{ template "fullname" . }}
+          - name: SCALOCK_DBUSER
+            value: "postgres"
+          - name: SCALOCK_DBPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{.Release.Name}}-database-password
+                key: password
+          - name: SCALOCK_DBNAME
+            value: "scalock"
+          - name: SCALOCK_DBHOST
+            {{ if .Values.global.dbExternalServiceHost }}
+            value: {{ .Values.global.dbExternalServiceHost }}
+            {{ else }}
+            value: {{ .Release.Name }}-aqua-database
+            {{ end }}
+          - name: SCALOCK_DBPORT
+            value: {{ default 5432 .Values.global.dbServicePort | quote }}
+          - name: SCALOCK_AUDIT_DBUSER
+            value: "postgres"
+          - name: SCALOCK_AUDIT_DBPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{.Release.Name}}-database-password
+                key: password
+          - name: SCALOCK_AUDIT_DBNAME
+            value: "slk_audit"
+          - name: SCALOCK_AUDIT_DBHOST
+            {{ if .Values.global.dbExternalServiceHost }}
+            value: {{ .Values.global.dbExternalServiceHost }}
+            {{ else }}
+            value: {{ .Release.Name }}-aqua-database
+            {{ end }}
+          - name: SCALOCK_AUDIT_DBPORT
+            value: {{ default 5432 .Values.global.dbServicePort | quote }}
+        ports:
+        - containerPort: {{ default 3622 .Values.gateway.containerPort }}
