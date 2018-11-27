@@ -20,7 +20,7 @@ spec:
       serviceAccount: {{ .Release.Name }}-sa
       containers:
       - name: {{ template "fullname" . }}
-        image: "{{.Values.global.imageCredentials.registry}}/database:{{.Values.global.imageTag}}"
+        image: "{{.Values.global.imageCredentials.registry}}/marketplace-database:{{.Values.global.imageTag}}"
         imagePullPolicy: {{.Values.global.imagePullPolicy}}
         env:
           - name: PGDATA

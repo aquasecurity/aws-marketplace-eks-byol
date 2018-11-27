@@ -15,10 +15,11 @@ Installation is simple, as Cloud Native apps should be! There are minimal pre-re
 * EKS role binding appropriate for Helm's use
 * Database options
 * Extend EKS with a StorageClass that supports EBS
+* AWS MP Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
 ### Aquiring the charts
 
-The Aqua server components are non-FOSS, therefore this chart is not available in the Helm package repository. However, you may simply clone this repository and install via Helm from this collection.
+The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository. However, you may simply clone this repository and install via Helm from this collection.
 
 ```shell
 git clone git@github.com:aquasecurity/aws-marketplace-eks-byol.git
@@ -163,8 +164,8 @@ Users that previously registered for a license token for use with AWS Container 
 Sometimes an admin just needs the read some logs. While these are accessible in the Aqua Console under Settings > Logs, should you need to access logs of the Aqua server pod via CLI, use the below command.
 
 ```shell
-SERVERPOD=$(kubectl get pods -l app=csp-aqua-console -n aqua --no-headers -o=custom-columns=NAME:.metadata.name)
-kubectl logs -f ${SERVERPOD} --namespace=aqua
+CONSOLEPOD=$(kubectl get pods -l app=csp-aqua-console -n aqua --no-headers -o=custom-columns=NAME:.metadata.name)
+kubectl logs -f ${CONSOLEPOD} --namespace=aqua
 ```
 
 ## ReDeploying Aqua CSP

@@ -1,5 +1,5 @@
 # gateway is the Aqua Gateway component
 gateway: 
-  image: "registry.aquasec.com/gateway"
+  image: ""
   servicePort: 3622
   containerPort: 3622
