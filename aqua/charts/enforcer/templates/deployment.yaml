@@ -24,7 +24,7 @@ spec:
         securityContext:
           privileged: true
         env:
-          - name: "AQUA_TOKEN"
+          - name: AQUA_TOKEN
             valueFrom:
               secretKeyRef:
                 name: {{ .Release.Name }}-enforcer-token
@@ -35,7 +35,7 @@ spec:
             value: {{ .Release.Name }}-eks
           - name: RESTART_CONTAINERS
             value: "no"
-          - Name: "AQUA_RUN_WATCHER"
+          - name: AQUA_RUN_WATCHER
             Value: "yes"
         volumeMounts:
           - mountPath: /var/run
