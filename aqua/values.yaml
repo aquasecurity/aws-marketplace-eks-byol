@@ -1,7 +1,7 @@
 global:
 # Please edit imageCredentials section to match the credentials that have been granted access to the Aqua private repository
   imageCredentials:
-    registry: "217273820646.dkr.ecr.us-east-1.amazonaws.com/62da55d2-e19f-4d6d-b78f-4957796d2480/cg-2801594128"
+    registry: "217273820646.dkr.ecr.us-east-1.amazonaws.com/62da55d2-e19f-4d6d-b78f-4957796d2480/cg-2481633156"
     username: ""
     password: ""
 # imageTag overrides the version number for all the Aqua components
