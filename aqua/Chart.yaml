@@ -1,7 +1,7 @@
 apiVersion: v1
 description: Aqua Container Security Platform
 name: aqua
-version: 3.5.0.2-latest
+version: 3.5.0.3-latest
 home: aquasec.com
 keywords:
 - aqua
@@ -9,5 +9,5 @@ keywords:
 - security
 - least privilege
 maintainers:
-- email: johnm@aquasec.com
-  name: John Michealson
+- email: maintainers@aquasec.com
+  name: maintainers

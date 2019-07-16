@@ -22,7 +22,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal pre-re
 The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository. However, you may simply clone this repository and install via Helm from this collection.
 
 ```shell
-git clone git@github.com:aquasecurity/aws-marketplace-eks-byol.git
+git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
 ```
 
 ### Helm EKS Role Binding
