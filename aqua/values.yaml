@@ -5,7 +5,7 @@ global:
     username: ""
     password: ""
 # imageTag overrides the version number for all the Aqua components
-  imageTag: "3.5.0.2-latest"
+  imageTag: "3.5.0.3-latest"
   imagePullPolicy: "Always"
 #If dbExternalServiceHost is empty, an Aqua provided database will be created from the Helm chart. Otherwise specify the address of the external database.
   dbExternalServiceHost:
