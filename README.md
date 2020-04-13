@@ -15,11 +15,11 @@ Installation is simple, as Cloud Native apps should be! There are minimal pre-re
 * EKS role binding appropriate for Helm's use
 * Database options
 * Extend EKS with a StorageClass that supports EBS
-* AWS MP Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
+* AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
 ### Aquiring the charts
 
-The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository. However, you may simply clone this repository and install via Helm from this collection.
+The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
 
 ```shell
 git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
@@ -29,7 +29,10 @@ git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
 
 #### Using helm with EKS requires providing a service account for use by tiller
 
-Run the following commands to create the requisite SA:
+* For Helm 3.x, Tiller is not required for the Helm installation.
+
+* For Helm 2.x
+Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
 
 ```bash
 kubectl create serviceaccount --namespace kube-system tiller
@@ -39,7 +42,24 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 
 ### Database Options
 
-This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenerios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* as in the example below.
+This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenerios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
+
+#### RDS requirements
+A production-grade Aqua CSP deployment requires a managed Postgres database installation. Following are the requirements:
+```bash
+* ***Engine type:*** PostgreSQL
+* ***Version:*** 9.6.9
+* ***DB instance size:*** Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
+                                   db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge, db.m4.16xlarge,
+                                   db.r4.large, db.r4.xlarge, db.r4.2xlarge, db.r4.4xlarge, db.r4.8xlarge, db.r4.16xlarge,
+                                   db.r3.large, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge]
+* ***Storage type:*** General Purpose or Provisioned IOPS based on the environment
+* ***Allocated storage:*** 40GB (minimum)
+* ***Multi-AZ deployment:*** enabled/disabled based on the environment
+* ***Connectivity:*** For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
+```
+
+The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* as in the example below.
 
 ```shell
 dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
@@ -47,10 +67,10 @@ dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
 
 ### Extend EKS with an EBS supported StorageClass
 
-If you are using an external PostgreSQL provider such as RDS this step is unnecessary.
+If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
 
 Per [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html)
-EKS does not ship with any StorageClasses. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternativly, edit the database chart to utilize your own StorageClass.
+EKS does not ship with any StorageClasses for clusters that were created prior to Kubernetes version 1.11. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternatively, edit the database chart to utilize your own StorageClass.
 
 ```shell
 kubectl create -f gp2-storage-class.yaml
@@ -58,9 +78,9 @@ kubectl create -f gp2-storage-class.yaml
 
 ## Secrets and Service Account
 
-If you are deploying to EKS from the AWS Marketplace (AWS MP) directly, the following section describing the dockerImagePull secret/sa is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
+Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the dockerImagePull secrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
 
-The Aqua console components are hosted on a private repository: `registry.aquasec.com`. As such a service account and associated dockerImagePull secret are required to be created. The Helm chart does this for you. Edit the *aws-marketplace-eks-byol/aqua/values.yaml* to include the credentials that were granted permission to download from Aqua Security's private repository. Many customers also utilize privatly hosted registries. If this is your scenerio, change the `registry:` variable to match as well.
+Only if you want to use a privately hosted repository for the Aqua images, refer to this section. The Aqua console components are hosted on a private repository: `registry.aquasec.com`. As such a service account and associated dockerImagePull secret are required to be created. The Helm chart does this for you. Edit the *aws-marketplace-eks-byol/aqua/values.yaml* to include the credentials that were granted permission to download from Aqua Security's private repository. Many customers also utilize privatly hosted registries. If this is your scenerio, change the `registry:` variable to match as well.
 
 ```shell
   imageCredentials:
@@ -71,13 +91,26 @@ The Aqua console components are hosted on a private repository: `registry.aquase
 
 ## Installing the Helm chart
 
+### Create aqua namespace
 ```shell
+kubectl create ns aqua
+```
+
+### Install Helm chart
+
+* For Helm 2.x
+```
 helm install --namespace aqua --name csp ./aqua
+```
+
+* For Helm 3.x
+```
+helm install --namespace aqua csp ./aqua
 ```
 
 ## Complete Initial Deployment
 
-Helm will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximatle five minutes. The time-consuming part of the deployment is the ELB recognising the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possilbe in the AWS EC2 console. The AWS cli counterpart may be used to poll status as well. Replace the `releaseName (csp)` and `namespace (aqua)` with your variables if you so choose.
+Helm will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximatly five minutes. The time-consuming part of the deployment is the ELB recognizing the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possilbe in the AWS EC2 console. The AWS cli counterpart may be used to poll status as well. Replace the `releaseName (csp)` and `namespace (aqua)` with your variables if you so choose.
 
 >Note: The `helm install` command will output similar commands with these variables pre-populated.
 

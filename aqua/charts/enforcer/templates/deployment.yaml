@@ -36,7 +36,7 @@ spec:
           - name: RESTART_CONTAINERS
             value: "no"
           - name: AQUA_RUN_WATCHER
-            Value: "yes"
+            value: "yes"
         volumeMounts:
           - mountPath: /var/run
             name: var-run
