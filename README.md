@@ -47,16 +47,16 @@ This helm chart includes an Aqua provided PostgreSQL database container for smal
 #### RDS requirements
 A production-grade Aqua CSP deployment requires a managed Postgres database installation. Following are the requirements:
 ```bash
-* ***Engine type:*** PostgreSQL
-* ***Version:*** 9.6.9
-* ***DB instance size:*** Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
+1. Engine type: PostgreSQL
+2. Version: 9.6.9
+3. DB instance size: Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
                                    db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge, db.m4.16xlarge,
                                    db.r4.large, db.r4.xlarge, db.r4.2xlarge, db.r4.4xlarge, db.r4.8xlarge, db.r4.16xlarge,
                                    db.r3.large, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge]
-* ***Storage type:*** General Purpose or Provisioned IOPS based on the environment
-* ***Allocated storage:*** 40GB (minimum)
-* ***Multi-AZ deployment:*** enabled/disabled based on the environment
-* ***Connectivity:*** For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
+4. Storage type: General Purpose or Provisioned IOPS based on the environment
+5. Allocated storage: 40GB (minimum)
+6. Multi-AZ deployment: enabled/disabled based on the environment
+7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
 ```
 
 The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* as in the example below.
