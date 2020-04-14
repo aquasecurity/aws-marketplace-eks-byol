@@ -41,7 +41,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 ### 1. Helm Charts
 
-#### 1.1 Aquiring the charts**
+####  1.1 Aquiring the charts
 
 The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
 
@@ -49,7 +49,7 @@ The Aqua console components are non-FOSS, therefore this chart is not available 
 git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
 ```
 
-#### 1.2 Helm EKS Role Binding**
+####  1.2 Helm EKS Role Binding
 
 #### Using helm with EKS requires providing a service account for use by Tiller
 
@@ -68,7 +68,7 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
 
-#### 2.1 RDS requirements
+####  2.1 RDS requirements
 A production-grade Aqua CSP deployment requires a managed Postgres database installation. Following are the requirements:
 ```bash
 1. Engine type: PostgreSQL
@@ -89,7 +89,7 @@ The helm chart may be modified to utilize such an external instance by modifying
 dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
 ```
 
-### 2.2 Extend EKS with an EBS supported StorageClass
+###  2.2 Extend EKS with an EBS supported StorageClass
 
 If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
 
@@ -300,7 +300,7 @@ pvc-df93aca6-d6fa-11e8-a39b-0a14904e5754 50Gi     RWO          Retain         Re
 ```
 >Note: If the status is anything other then `Released` at this point stop and retrace your steps as it'll be difficult to proceed.
 
-4. Edit the PV to `unlock` the dynamically generated PVC UID that is specified.
+5. Edit the PV to `unlock` the dynamically generated PVC UID that is specified.
 
 ```shell
 
@@ -325,26 +325,26 @@ kubectl edit pv -n aqua pvc-df93aca6-d6fa-11e8-a39b-0a14904e5754
     uid:
 ```
 
-5. Check that the status of the PV has changed to `Available`
+6. Check that the status of the PV has changed to `Available`
 
 ```shell
 NAME                                     CAPACITY ACCESS MODES RECLAIM POLICY STATUS  
 pvc-df93aca6-d6fa-11e8-a39b-0a14904e5754 50Gi     RWO          Available         Released
 ```
 
-6. Run the helm installer with the `exact same release name`
+7. Run the helm installer with the `exact same release name`
 
 ```shell
 helm install --namespace aqua --name csp ./aqua
  ```
 
-7. Wait 15 seconds, then reapply the secrets from your backup file.
+8. Wait 15 seconds, then reapply the secrets from your backup file.
 
 ```bash
 kubectl apply -f aquaSecrets.json
 ```
  
-8. Check the console as in the above installation section [Complete Initial Deployment](#Complete-Initial-Deployment)
+9. Check the console as in the above installation section [Complete Initial Deployment](#Complete-Initial-Deployment)
 
 
 ## Uninstalling Aqua CSP
