@@ -1,7 +1,7 @@
 apiVersion: v1
 description: Aqua Container Security Platform
 name: aqua
-version: 3.5.0.3-latest
+version: 4-6-20099-latest
 home: aquasec.com
 keywords:
 - aqua
