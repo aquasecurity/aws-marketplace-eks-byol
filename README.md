@@ -1,4 +1,5 @@
 # Aqua Container Security Platform (CSP) for Amazon EKS
+This document is for version 3.5.03
 
 This GitHub repo retains the helm charts for Aqua Security's AWS EKS Marketplace offering. This readme includes reference documentation regarding installation and removals while operating within AWS EKS.
 
