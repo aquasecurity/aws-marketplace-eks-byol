@@ -90,7 +90,7 @@ The helm chart may be modified to utilize such an external instance by modifying
 dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
 ```
 
-###  2.2 Extend EKS with an EBS supported StorageClass
+####  2.2 Extend EKS with an EBS supported StorageClass
 
 If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
 
@@ -101,7 +101,7 @@ EKS does not ship with any StorageClasses for clusters that were created prior t
 kubectl create -f gp2-storage-class.yaml
 ```
 
-## 3. Secrets and Service Account
+### 3. Secrets and Service Account
 
 Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the Docker ImagePullSecrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
 
