@@ -11,8 +11,6 @@ type: Opaque
 data:
   password: {{ b64enc (randAlphaNum 32) }}
 ---
-{{ if .Values.global.dbExternalServiceHost }}
-{{ else }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -23,6 +21,9 @@ metadata:
     secretType: aquaSecurity
 type: Opaque
 data:
+{{ if .Values.global.dbExternalServiceHost }}
+  password: {{ b64enc (.Values.global.dbExternalPassword) }}
+{{ else }}
   password: {{ b64enc (randAlphaNum 32) }}
 {{ end }}
 ---

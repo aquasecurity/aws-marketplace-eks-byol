@@ -9,6 +9,8 @@ global:
   imagePullPolicy: "Always"
 #If dbExternalServiceHost is empty, an Aqua provided database will be created from the Helm chart. Otherwise specify the address of the external database.
   dbExternalServiceHost:
+#If external RDS is deployed, add the DB password here for secret creation
+  dbExternalPassword:
 # Overrides the database service port in the case an external database is in use
   dbServicePort: "5432"
 # If aquaLicenseToken is empty, the system will prompt for a license upon first startup. Enter your Aqua license token here if you have one.

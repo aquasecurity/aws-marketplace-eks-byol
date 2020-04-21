@@ -16,13 +16,11 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 - [Prerequisites](#prerequisites)
   - [EKS cluster](#1-EKS-cluster-environment)
-    - [Existing EKS cluster]
-    - [Creating new EKS cluster]
-  - [Database considerations](#2-database-options)
-    - [PostgreSQL container]
-    - [RDS deployment]
-  - [Secrets and Service account](#3-secrets-and-service-account)
-  - [Helm charts](#4-helm-charts)
+  - [Helm charts](#2-helm-charts)
+  - [Database considerations](#3-database-options)
+    - [Deployment options](#31-Deployment-options)
+    - [EKS Storage class](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
+  - [Secrets and Service account](#4-secrets-and-service-account)
 - [Deployment instructions](#deployment-instructions)
   - [Aqua namespace creation](#1-create-aqua-namespace)
   - [Helm chart installation](#2-install-helm-chart)
@@ -42,10 +40,8 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 ## Prerequisites
 
 * EKS cluster environment
-* Database options
 * A current installation of [Helm](https://helm.sh/)
-* EKS role binding appropriate for Helm's use
-* Extend EKS with a StorageClass that supports EBS
+* Database options
 * AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
 ### 1. EKS cluster environment
@@ -83,17 +79,41 @@ Run the following command to create the cluster
 ```shell
 eksctl create cluster -f cluster.yaml
 ```
+### 2. Helm Charts
 
-### 2. Database Options
+####  2.1 Acquiring the charts
+
+The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
+
+```shell
+git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
+```
+
+####  2.2 Helm EKS Role Binding
+
+#### Using helm with EKS requires providing a service account for use by Tiller
+
+* For Helm 3.x, Tiller is not required for the Helm installation.
+
+* For Helm 2.x
+Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
+
+```bash
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+```
+
+### 3. Database Options
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
 
-#### 2.1 Deployment options
+#### 3.1 Deployment options
 
 #### PostgreSQL container
 For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
-If you choose to go this route then you can skip the next section and head directly to [Extend EKS with an EBS supported StorageClass](#22-Extend-EKS-with-an-EBS-supported-StorageClass)
+If you choose to go this route then you can skip the next section and head directly to [Extend EKS with an EBS supported StorageClass](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
 
 #### RDS deployment
 A production-grade Aqua CSP deployment requires a managed Postgres database installation.
@@ -116,19 +136,15 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
 
   You can use the following CloudFormation template as a quickstart to get RDS deployed.
 
-- Create a secret for the DB password
-  
-  ```shell
-  
-
 - Modify the Helm chart 
 
-  The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* as in the example below.
+  The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* and *dbExternalPassword* as in the example below.
   ```shell
   dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
+  dbExternalPassword:"<secure_password_here>"
   ```
 
-#### 2.2 Extend EKS with an EBS supported StorageClass
+#### 3.2 Extend EKS with an EBS supported StorageClass
 
 If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
 
@@ -139,7 +155,7 @@ EKS does not ship with any StorageClasses for clusters that were created prior t
 kubectl create -f gp2-storage-class.yaml
 ```
 
-### 3. Secrets and Service Account
+### 4. Secrets and Service Account
 
 Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the Docker ImagePullSecrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
 
@@ -150,31 +166,6 @@ Only if you want to use a privately hosted repository for the Aqua images, refer
     registry: "registry.aquasec.com"
     username: "example@aquasec.com"
     password: "k8s4allis@sh0rtP@ssword"
-```
-
-### 4. Helm Charts
-
-####  4.1 Acquiring the charts
-
-The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
-
-```shell
-git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
-```
-
-####  4.2 Helm EKS Role Binding
-
-#### Using helm with EKS requires providing a service account for use by Tiller
-
-* For Helm 3.x, Tiller is not required for the Helm installation.
-
-* For Helm 2.x
-Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
-
-```bash
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 ```
 
 ## Deployment instructions
