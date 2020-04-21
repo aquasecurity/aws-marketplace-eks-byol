@@ -12,7 +12,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 ## Contents
 
-- [Prerequisites](##-prerequisites)
+- [Prerequisites](#prerequisites)
   - [Helm charts](#1.-helm-charts)
   - [Database considerations](#2.-database-options)
   - [Secrets and Service account](#3.-secrets-and-service-account)
