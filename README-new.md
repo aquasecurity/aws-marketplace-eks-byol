@@ -46,7 +46,7 @@ You can choose to secure an existing EKS environment by installing Aqua in a sep
 
 ***<details><summary><b>Existing EKS cluster</b></summary>***
 
-If you want to go this route and already have an EKS cluster then you can skip the next section and directly head to [Database options](#2-database-options)
+If you want to go this route and already have an EKS cluster then you can skip the next section and directly head to [Helm Charts](#2-helm-charts)
 </details>
 
 ***<details><summary><b>Create new EKS cluster</b></summary>***
