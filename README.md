@@ -1,5 +1,7 @@
 # Aqua Container Security Platform (CSP) for Amazon EKS
-This document is for version 4.6.20099
+This document is for Aqua CSP version 4.6.20099.
+
+Aqua EKS BYOL listing enables you to add security capabilities to your existing cloud-native workloads on EKS cluster environment. Aqua replaces outdated signature-based approaches with modern controls that leverage the cloud-native principles of immutability, microservices and portability.
 
 This GitHub repo retains the helm charts for Aqua Security's AWS EKS Marketplace offering. This readme includes reference documentation regarding installation and removals while operating within AWS EKS.
 
@@ -13,9 +15,10 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 ## Contents
 
 - [Prerequisites](#prerequisites)
-  - [Helm charts](#1-helm-charts)
-  - [Database considerations](#2-database-options)
-  - [Secrets and Service account](#3-secrets-and-service-account)
+  - [EKS cluster](#1-EKS-cluster-environment)
+  - [Helm charts](#2-helm-charts)
+  - [Database considerations](#3-database-options)
+  - [Secrets and Service account](#4-secrets-and-service-account)
 - [Deployment instructions](#deployment-instructions)
   - [Aqua namespace creation](#1-create-aqua-namespace)
   - [Helm chart installation](#2-install-helm-chart)
@@ -34,15 +37,50 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 ## Prerequisites
 
+* EKS cluster environment
 * A current installation of [Helm](https://helm.sh/)
 * EKS role binding appropriate for Helm's use
 * Database options
 * Extend EKS with a StorageClass that supports EBS
 * AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
-### 1. Helm Charts
+### 1. EKS cluster environment
+You can choose to secure an existing EKS environment by installing Aqua in a separate namespace on the same EKS cluster. In case you choose to run Aqua CSP in a separate EKS cluster, please create an EKS environment using eksctl commands: [https://eksctl.io/]
 
-####  1.1 Aquiring the charts
+#### Create new EKS cluster
+A single Aqua CSP installation can be used to connect to several different cloud-native workloads. If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
+
+You can use a cluster config file:
+```shell
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: cluster-with-private-ng
+  region: us-east-1
+
+vpc:
+  nat:
+    gateway: HighlyAvailable # other options: Disable, Single (default)
+
+nodeGroups:
+  - name: ng-1-workers
+    labels: { role: workers }
+    instanceType: m5.xlarge
+    desiredCapacity: 10
+    privateNetworking: true # if only 'Private' subnets are given, this must be enabled
+    ssh: # use existing EC2 key
+      publicKeyName: <EC2-keypair-name>
+```
+
+Run the following command to create the cluster
+```shell
+eksctl create cluster -f cluster.yaml
+```
+
+### 2. Helm Charts
+
+####  2.1 Aquiring the charts
 
 The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
 
@@ -50,7 +88,7 @@ The Aqua console components are non-FOSS, therefore this chart is not available 
 git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
 ```
 
-####  1.2 Helm EKS Role Binding
+####  2.2 Helm EKS Role Binding
 
 #### Using helm with EKS requires providing a service account for use by Tiller
 
@@ -65,11 +103,11 @@ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admi
 kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 ```
 
-### 2. Database Options
+### 3. Database Options
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
 
-####  2.1 RDS requirements
+####  3.1 RDS requirements
 A production-grade Aqua CSP deployment requires a managed Postgres database installation. Following are the requirements:
 ```bash
 1. Engine type: PostgreSQL
@@ -90,7 +128,7 @@ The helm chart may be modified to utilize such an external instance by modifying
 dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
 ```
 
-####  2.2 Extend EKS with an EBS supported StorageClass
+####  3.2 Extend EKS with an EBS supported StorageClass
 
 If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
 
@@ -101,7 +139,7 @@ EKS does not ship with any StorageClasses for clusters that were created prior t
 kubectl create -f gp2-storage-class.yaml
 ```
 
-### 3. Secrets and Service Account
+### 4. Secrets and Service Account
 
 Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the Docker ImagePullSecrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
 
