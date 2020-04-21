@@ -20,7 +20,6 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
   - [Database considerations](#3-database-options)
     - [Deployment options](#31-Deployment-options)
     - [EKS Storage class](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
-  - [Secrets and Service account](#4-secrets-and-service-account)
 - [Deployment instructions](#deployment-instructions)
   - [Aqua namespace creation](#1-create-aqua-namespace)
   - [Helm chart installation](#2-install-helm-chart)
@@ -153,19 +152,6 @@ EKS does not ship with any StorageClasses for clusters that were created prior t
 
 ```shell
 kubectl create -f gp2-storage-class.yaml
-```
-
-### 4. Secrets and Service Account
-
-Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the Docker ImagePullSecrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
-
-Only if you want to use a privately hosted repository for the Aqua images, refer to this section. The Aqua console components are hosted on a private repository: `registry.aquasec.com`. As such a service account and associated Docker ImagePullSecrets are required to be created. The Helm chart does this for you. Edit the *aws-marketplace-eks-byol/aqua/values.yaml* to include the credentials that were granted permission to download from Aqua Security's private repository. Many customers also utilize privately hosted registries. If this is your scenario, change the `registry:` variable to match as well.
-
-```shell
-  imageCredentials:
-    registry: "registry.aquasec.com"
-    username: "example@aquasec.com"
-    password: "k8s4allis@sh0rtP@ssword"
 ```
 
 ## Deployment instructions
