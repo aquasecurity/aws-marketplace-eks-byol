@@ -44,13 +44,17 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 * AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
 ### 1. EKS cluster environment
-You can choose to secure an existing EKS environment by installing Aqua in a separate namespace on the same EKS cluster. You can also choose to run Aqua CSP so that it can be used to connect to several different cloud-native workloads.
+You can choose to secure an existing EKS environment by installing Aqua in a separate namespace on the same EKS cluster. Aqua CSP can also be deployed on a separate EKS environment than that of the workloads. It will allow you to use a single Aqua deployment to connect to several different cloud-native workloads.
 
-#### Existing EKS cluster
-If you want to go this route then you can skip the next section and directly head to [Database options](#2-database-options)
+***<details><summary><b>Existing EKS cluster</b></summary>***
 
-#### Create new EKS cluster
-Creation of an EKS cluster can be simplified using eksctl commands: [https://eksctl.io/]. If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
+If you want to go this route and already have an EKS cluster then you can skip the next section and directly head to [Database options](#2-database-options)
+</details>
+
+***<details><summary><b>Create new EKS cluster</b></summary>***
+Creation of an EKS cluster can be simplified using eksctl commands: [https://eksctl.io/]. 
+
+If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
 
 You can use a cluster config file:
 ```shell
@@ -78,6 +82,8 @@ Run the following command to create the cluster
 ```shell
 eksctl create cluster -f cluster.yaml
 ```
+</details>
+
 ### 2. Helm Charts
 
 ####  2.1 Acquiring the charts
@@ -109,12 +115,13 @@ This helm chart includes an Aqua provided PostgreSQL database container for smal
 
 #### 3.1 Deployment options
 
-#### PostgreSQL container
+***<details><summary><b>PostgreSQL container</b></summary>***
 For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
 If you choose to go this route then you can skip the next section and head directly to [Extend EKS with an EBS supported StorageClass](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
+</details>
 
-#### RDS deployment
+***<details><summary><b>RDS deployment</b></summary>***
 A production-grade Aqua CSP deployment requires a managed Postgres database installation.
 
 - RDS requirements:
@@ -142,6 +149,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
   dbExternalPassword:"<secure_password_here>"
   ```
+</details>
 
 #### 3.2 Extend EKS with an EBS supported StorageClass
 
