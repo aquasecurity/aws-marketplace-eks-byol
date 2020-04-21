@@ -18,8 +18,6 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
   - [EKS cluster](#1-EKS-cluster-environment)
   - [Helm charts](#2-helm-charts)
   - [Database considerations](#3-database-options)
-    - [Deployment options](#31-Deployment-options)
-    - [EKS Storage class](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
 - [Deployment instructions](#deployment-instructions)
   - [Aqua namespace creation](#1-create-aqua-namespace)
   - [Helm chart installation](#2-install-helm-chart)
@@ -113,12 +111,21 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
 
-#### 3.1 Deployment options
-
 ***<details><summary><b>PostgreSQL container</b></summary>***
 For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
-If you choose to go this route then you can skip the next section and head directly to [Extend EKS with an EBS supported StorageClass](#32-Extend-EKS-with-an-EBS-supported-StorageClass)
+***Extend EKS with an EBS supported StorageClass***
+
+If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. Head to [Deployment instructions](#Deployment-instructions)
+
+Per [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html)
+EKS does not ship with any StorageClasses for clusters that were created prior to Kubernetes version 1.11. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternatively, edit the database chart to utilize your own StorageClass.
+
+```shell
+kubectl create -f gp2-storage-class.yaml
+```
+
+If you choose to go this route then you can skip the next section and head directly to [Deployment instructions](#Deployment-instructions)
 </details>
 
 ***<details><summary><b>RDS deployment</b></summary>***
@@ -150,17 +157,6 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   dbExternalPassword:"<secure_password_here>"
   ```
 </details>
-
-#### 3.2 Extend EKS with an EBS supported StorageClass
-
-If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
-
-Per [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html)
-EKS does not ship with any StorageClasses for clusters that were created prior to Kubernetes version 1.11. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternatively, edit the database chart to utilize your own StorageClass.
-
-```shell
-kubectl create -f gp2-storage-class.yaml
-```
 
 ## Deployment instructions
 
