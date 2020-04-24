@@ -49,12 +49,6 @@ You can get the latest helm installation [Helm](https://helm.sh/).
 
 >Note: If you are using Helm 2.x please refer to [Configure Tiller](#1-configure-Tiller)
 
-#### Acquiring Helm chart
-The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
-
-```shell
-git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
-```
 
 ### 3. Database Options
 
@@ -79,19 +73,26 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
   >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
 
-  **1. Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)**
-  
-  **2. Get the kubeconfig file**
+  #### 1. Access the EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
   ``` 
-  
-  **3. Create aqua namespace**
+
+  #### 2. Acquiring the Helm chart
+  The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
+
+  ```shell
+  git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
+  ```
+
+  #### 3. Create aqua namespace
   ```shell
   kubectl create ns aqua
   ```
 
-  **4. Install Helm chart**
+  #### 4. Install Helm chart
   ```
   helm install --namespace aqua csp ./aqua
   ```
@@ -106,8 +107,25 @@ For production deployments Aqua recommends implementing a dedicated managed data
   ### Architecture Diagram
 
   ### Deployment instructions
+  
+  
+  #### 1. Access the EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Get the kubeconfig file
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ``` 
+  
+  #### 2. Create RDS instance
 
-  - Modify the Helm chart 
+  #### 3. Acquiring Helm chart
+  The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
+
+  ```shell
+  git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
+  ```
+
+  #### 4. Modify the Helm chart 
 
   The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* and *dbExternalPassword* as in the example below.
   ```shell
@@ -116,22 +134,12 @@ For production deployments Aqua recommends implementing a dedicated managed data
   dbUsername: "postgres"
   ```
 
-  #### 1. Access the EKS cluster
-  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)
-
-  Get the kubeconfig file
-  ```shell
-  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
-  ``` 
-  
-  #### 2. Create RDS instance
-
-  #### 3. Create aqua namespace
+  #### 5. Create aqua namespace
   ```shell
   kubectl create ns aqua
   ```
 
-  #### 4. Install Helm chart
+  #### 6. Install Helm chart
   ```
   helm install --namespace aqua csp ./aqua
   ```
