@@ -36,7 +36,7 @@ spec:
                 name: {{.Release.Name}}-enforcer-token
                 key: token
           - name: SCALOCK_DBUSER
-            value: "postgres"
+            value: {{ .Values.global.dbUsername }}
           - name: SCALOCK_DBPASSWORD
             valueFrom:
               secretKeyRef:
@@ -53,7 +53,7 @@ spec:
           - name: SCALOCK_DBPORT
             value: {{ default 5432 .Values.global.dbServicePort | quote }}
           - name: SCALOCK_AUDIT_DBUSER
-            value: "postgres"
+            value: {{ .Values.global.dbUsername }}
           - name: SCALOCK_AUDIT_DBPASSWORD
             valueFrom:
               secretKeyRef:

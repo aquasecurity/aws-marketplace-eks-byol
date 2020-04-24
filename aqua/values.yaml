@@ -9,6 +9,7 @@ global:
   imagePullPolicy: "Always"
 #If dbExternalServiceHost is empty, an Aqua provided database will be created from the Helm chart. Otherwise specify the address of the external database.
   dbExternalServiceHost:
+  dbUsername: "postgres"
 #If external RDS is deployed, add the DB password here for secret creation
   dbExternalPassword:
 # Overrides the database service port in the case an external database is in use
