@@ -103,9 +103,9 @@ For production deployments Aqua recommends implementing a dedicated managed data
   A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements.
   You can also use this CloudFormation template as a quickstart to get RDS deployed.
 
-  #### Architecture Diagram
+  ### Architecture Diagram
 
-  #### Deployment instructions
+  ### Deployment instructions
 
   - Modify the Helm chart 
 
@@ -115,28 +115,27 @@ For production deployments Aqua recommends implementing a dedicated managed data
   dbExternalPassword: "<secure_password_here>"
   dbUsername: "postgres"
   ```
-</details>
 
-## Deployment instructions
+  #### 1. Access the EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)
 
-**1. Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)**
+  Get the kubeconfig file
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ``` 
   
-**2. Create RDS instance**
+  #### 2. Create RDS instance
 
-**3. Get the kubeconfig file**
-```shell
-eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
- ``` 
+  #### 3. Create aqua namespace
+  ```shell
+  kubectl create ns aqua
+  ```
 
-**4. Create aqua namespace**
-```shell
-kubectl create ns aqua
-```
-
-**5. Install Helm chart**
-```
-helm install --namespace aqua csp ./aqua
-```
+  #### 4. Install Helm chart
+  ```
+  helm install --namespace aqua csp ./aqua
+  ```
+</details>
 
 ## Verify Deployment
 
