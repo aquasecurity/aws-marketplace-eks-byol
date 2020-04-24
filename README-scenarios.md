@@ -49,6 +49,7 @@ You can get the latest helm installation [Helm](https://helm.sh/).
 
 >Note: If you are using Helm 2.x please refer to [Configure Tiller](#1-configure-Tiller)
 
+#### Acquiring Helm chart
 The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
 
 ```shell
@@ -64,14 +65,14 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
 ## Deployment Scenarios 
 
-### Scenario 1: Getting started with Aqua
+<h3><details><summary>Scenario 1: Getting started with Aqua</summary></h3>
   This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster
 
   >Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
   #### Architecture Diagram
   ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/secanrio1arch.png)
-  
+
   #### Deployment instructions
   For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
@@ -86,8 +87,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   ```
   helm install --namespace aqua csp ./aqua
   ```
-
-
+</details>
 
 ***<details><summary><b>RDS deployment</b></summary>***
 A production-grade Aqua CSP deployment requires a managed Postgres database installation.
