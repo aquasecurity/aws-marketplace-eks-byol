@@ -79,39 +79,35 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
   >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
 
-  **1. Create aqua namespace**
+  **1. Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)**
+  
+  **2. Get the kubeconfig file**
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ``` 
+  
+  **3. Create aqua namespace**
   ```shell
   kubectl create ns aqua
   ```
 
-  **2. Install Helm chart**
+  **4. Install Helm chart**
   ```
   helm install --namespace aqua csp ./aqua
   ```
 </details>
 
-***<details><summary><b>RDS deployment</b></summary>***
-A production-grade Aqua CSP deployment requires a managed Postgres database installation.
+**<details><summary><b>Scenario 2: Production EKS Cluster</b></summary>**
+  This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
-- RDS requirements:
+  A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements.
+  You can also use this CloudFormation template as a quickstart to get RDS deployed.
 
-  Following are the requirements:
-  ```bash
-  1. Engine type: PostgreSQL
-  2. Version: 9.6.9
-  3. DB instance size: Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
-                                   db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge, db.m4.16xlarge,
-                                   db.r4.large, db.r4.xlarge, db.r4.2xlarge, db.r4.4xlarge, db.r4.8xlarge, db.r4.16xlarge,
-                                   db.r3.large, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge]
-  4. Storage type: General Purpose or Provisioned IOPS based on the environment
-  5. Allocated storage: 40GB (minimum)
-  6. Multi-AZ deployment: enabled/disabled based on the environment
-  7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
-  ```
+  #### Architecture Diagram
 
-  You can use the following CloudFormation template as a quickstart to get RDS deployed.
+  #### Deployment instructions
 
-- Modify the Helm chart 
+  - Modify the Helm chart 
 
   The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* and *dbExternalPassword* as in the example below.
   ```shell
@@ -123,19 +119,21 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
 
 ## Deployment instructions
 
-### 1. Create aqua namespace
+**1. Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster)**
+  
+**2. Create RDS instance**
+
+**3. Get the kubeconfig file**
+```shell
+eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+ ``` 
+
+**4. Create aqua namespace**
 ```shell
 kubectl create ns aqua
 ```
 
-### 2. Install Helm chart
-
-* For Helm 2.x
-```
-helm install --namespace aqua --name csp ./aqua
-```
-
-* For Helm 3.x
+**5. Install Helm chart**
 ```
 helm install --namespace aqua csp ./aqua
 ```
@@ -388,7 +386,7 @@ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admi
 kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 ```
 
-### 2. RDS requirements:
+### 2. RDS requirements
 A production-grade Aqua CSP deployment requires a managed Postgres database installation.
   ```bash
   1. Engine type: PostgreSQL
