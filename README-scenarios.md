@@ -65,7 +65,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
 ## Deployment Scenarios 
 
-<h3><details><summary>Scenario 1: Getting started with Aqua</summary>
+**<details><summary>Scenario 1: Getting started with Aqua</summary>**
   This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster
 
 
@@ -88,7 +88,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   ```
   helm install --namespace aqua csp ./aqua
   ```
-</details></h3>
+</details>
 
 ***<details><summary><b>RDS deployment</b></summary>***
 A production-grade Aqua CSP deployment requires a managed Postgres database installation.
