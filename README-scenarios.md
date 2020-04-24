@@ -62,24 +62,26 @@ This helm chart includes an Aqua provided PostgreSQL database container for smal
 For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#2-rds-requirements)
 
 
-## Deployment Scenario 1: Getting started with Aqua
+## Deployment Scenarios 
+
+### Scenario 1: Getting started with Aqua
   This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster
 
   >Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
-  ### Architecture Diagram
+  #### Architecture Diagram
 
-  ### Deployment instructions
+  #### Deployment instructions
   For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
   >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
 
-  #### 1. Create aqua namespace
+  **1. Create aqua namespace**
   ```shell
   kubectl create ns aqua
   ```
 
-  #### 2. Install Helm chart
+  **2. Install Helm chart**
   ```
   helm install --namespace aqua csp ./aqua
   ```
