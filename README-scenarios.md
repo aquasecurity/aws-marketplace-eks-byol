@@ -68,7 +68,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   >Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
   ### Architecture Diagram
-
+  ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/secanrio1arch.png)
   ### Deployment instructions
   For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
 
