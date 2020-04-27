@@ -43,12 +43,9 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 Aqua can be deployed on an existing EKS cluster to secure your running workload or you can choose to deploy Aqua on a separate EKS environment than that of the workloads.
 
 ### 2. Helm Charts
-
-#### Install
 You can get the latest helm installation [Helm](https://helm.sh/).
 
 >Note: If you are using Helm 2.x please refer to [Configure Tiller](#1-configure-Tiller)
-
 
 ### 3. Database Options
 
@@ -65,11 +62,11 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
   >Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
-  #### Architecture Diagram
-  ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/secanrio1arch.png)
+  ### Architecture Diagram
+  ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario1.png)
 
-  #### Deployment instructions
-  For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However this architecture is not scalable or resilient enough for production workloads.
+  ### Deployment instructions
+  For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However, this architecture is not scalable or resilient enough for production workloads.
 
   >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
 
@@ -79,6 +76,11 @@ For production deployments Aqua recommends implementing a dedicated managed data
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
   ``` 
+
+  Verify the node status
+  ```shell
+  kubectl get nodes
+  ```
 
   #### 2. Acquiring the Helm chart
   The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
@@ -105,6 +107,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   You can also use this CloudFormation template as a quickstart to get RDS deployed.
 
   ### Architecture Diagram
+  ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png)
 
   ### Deployment instructions
   
@@ -117,6 +120,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   ``` 
   
   #### 2. Create RDS instance
+  [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://s3.amazonaws.com/aqua-security-public/aquaEcs.yaml)
 
   #### 3. Acquiring Helm chart
   The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
@@ -127,7 +131,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
   #### 4. Modify the Helm chart 
 
-  The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* and *dbExternalPassword* as in the example below.
+  The helm chart may be modified to utilize such an external instance by modifying the file `aws-marketplace-eks-byol/aqua/values.yaml`, section `dbExternalServiceHost` and `dbExternalPassword` as in the example below.
   ```shell
   dbExternalServiceHost: "<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
   dbExternalPassword: "<secure_password_here>"
@@ -440,7 +444,7 @@ vpc:
 nodeGroups:
   - name: Aqua-csp-ng
     instanceType: m5.xlarge
-    desiredCapacity: 10
+    desiredCapacity: 2 # At least 2 worker-nodes are needed for an Aqua deployment
     privateNetworking: true # if only 'Private' subnets are given, this must be enabled
     ssh: # use existing EC2 key
       publicKeyName: <EC2-keypair-name>
@@ -449,6 +453,11 @@ nodeGroups:
 Run the following command to create the cluster
 ```shell
 eksctl create cluster -f cluster.yaml
+```
+
+>Note: If you get an error related to `UnsupportedAvailabilityZoneException` you can use the CLI command instead:
+```shell
+eksctl create cluster --name Aqua-eks-private --region us-east-1 --zones us-east-1a,us-east-1b --nodegroup-name private-ng1 --nodes 2 --ssh-public-key manasip-euskey --node-private-networking --vpc-nat-mode HighlyAvailable
 ```
 ***<details><summary><b>Existing EKS cluster</b></summary>***
 </details>  
