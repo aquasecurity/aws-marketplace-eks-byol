@@ -39,12 +39,20 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 ### 1. EKS cluster environment
 Aqua can be deployed on an existing EKS cluster to secure your running workload or you can choose to deploy Aqua on a separate EKS environment than that of the workloads.
 
-### 2. Helm Charts
-You can get the latest helm installation [Helm](https://helm.sh/).
+### 2. Install AWS CLI
+```shell
+pip install awscli --upgrade --user
+```
 
->Note: If you are using Helm 2.x please refer to [Configure Tiller](#1-configure-Tiller)
+### 3. Install Aquactl
+Aquactl is a command line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
+You can get the latest helm installation [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl).
+Make it executable
+```shell
+chmod +x aquactl
+```
 
-### 3. Database Options
+### 4. Database Options
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios.
 
@@ -79,22 +87,13 @@ For production deployments Aqua recommends implementing a dedicated managed data
   kubectl get nodes
   ```
 
-  #### 2. Acquiring the Helm chart
-  The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
-
+  #### 2. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation
   ```shell
-  git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
+  aquactl deploy csp
   ```
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-internaldb-output.png)
 
-  #### 3. Create aqua namespace
-  ```shell
-  kubectl create ns aqua
-  ```
-
-  #### 4. Install Helm chart
-  ```
-  helm install --namespace aqua csp ./aqua
-  ```
 </details>
 
 **<details><summary><b>Scenario 2: Production EKS Cluster</b></summary>**
@@ -126,24 +125,13 @@ For production deployments Aqua recommends implementing a dedicated managed data
   git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
   ```
 
-  #### 4. Modify the Helm chart 
-
-  The helm chart may be modified to utilize such an external instance by modifying the file `aws-marketplace-eks-byol/aqua/values.yaml`, section `dbExternalServiceHost` and `dbExternalPassword` as in the example below.
+  #### 2. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation
   ```shell
-  dbExternalServiceHost: "<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
-  dbExternalPassword: "<secure_password_here>"
-  dbUsername: "postgres"
+  aquactl deploy csp
   ```
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
-  #### 5. Create aqua namespace
-  ```shell
-  kubectl create ns aqua
-  ```
-
-  #### 6. Install Helm chart
-  ```
-  helm install --namespace aqua csp ./aqua
-  ```
 </details>
 
 **<details><summary><b>Scenario 3: Production EKS Multi-Cluster</b></summary>**
@@ -163,31 +151,13 @@ For production deployments Aqua recommends implementing a dedicated managed data
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
   ```
 
-  #### 3. Acquiring Helm chart
-  The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
-
+  #### 2. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation. For multi-cluster environments, we need to expose the Aqua Gateway service as a LoadBalancer.
   ```shell
-  git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
+  aquactl deploy csp --gateway-service LoadBalancer
   ```
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
-  #### 4. Modify the Helm chart 
-
-  The helm chart may be modified to utilize such an external instance by modifying the file `aws-marketplace-eks-byol/aqua/values.yaml`, section `dbExternalServiceHost` and `dbExternalPassword` as in the example below.
-  ```shell
-  dbExternalServiceHost: "<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
-  dbExternalPassword: "<secure_password_here>"
-  dbUsername: "postgres"
-  ```
-
-  #### 5. Create aqua namespace
-  ```shell
-  kubectl create ns aqua
-  ```
-
-  #### 6. Install Helm chart
-  ```
-  helm install --namespace aqua csp ./aqua
-  ```
 </details>
 
 ## Verify Deployment
