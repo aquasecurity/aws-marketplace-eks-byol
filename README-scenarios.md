@@ -35,7 +35,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
   - [Aqua PostgreSQL container in use](#Aqua-PostgreSQL-container-in-use)
 - [Uninstalling Aqua CSP](#Uninstalling-Aqua-CSP)
 - [Support](#support)
-- [Appendix]()
+- [Appendix](#appendix)
 
 ## Deployment considerations
 
@@ -428,31 +428,42 @@ Creation of an EKS cluster can be simplified using eksctl commands: [https://eks
 
 If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
 
-You can use a cluster config file:
+You can use a cluster config file. Make sure to update the node requirements as well as EC2 Keypair for SSH access into the nodes
 ```shell
+# eks-cluster.yaml
+# A cluster with a managed nodegroup and private networking.
+---
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: cluster-with-private-ng
+  name: Eks-cluster
   region: us-east-1
 
-vpc:
-  nat:
-    gateway: HighlyAvailable # other options: Disable, Single (default)
+# Multiple AZ's can be added here except for us-east-1e which doesn't support EKS
+availabilityZones:
+  - "us-east-1a"
+  - "us-east-1b"
 
-nodeGroups:
-  - name: Aqua-csp-ng
-    instanceType: m5.xlarge
-    desiredCapacity: 2 # At least 2 worker-nodes are needed for an Aqua deployment
-    privateNetworking: true # if only 'Private' subnets are given, this must be enabled
-    ssh: # use existing EC2 key
-      publicKeyName: <EC2-keypair-name>
+managedNodeGroups:
+  - name: managed-ng-1
+    minSize: 1
+    maxSize: 2
+    desiredCapacity: 2
+    volumeSize: 20
+    ssh:
+      allow: true
+      publicKeyName: <EC2_keypair>
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        externalDNS: true
+        certManager: true
 ```
 
 Run the following command to create the cluster
 ```shell
-eksctl create cluster -f cluster.yaml
+eksctl create cluster -f eks-cluster.yaml --write-kubeconfig=true
 ```
 
 >Note: If you get an error related to `UnsupportedAvailabilityZoneException` you can use the CLI command instead:

@@ -5,9 +5,9 @@ Description: >-
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterLabels:
-      VpcId:
+      VpcID:
         default: VPC ID that hosts the EKS and will host the RDS instance
-      VpcCidr:
+      VpcIPCidr:
         default: VPC CIDR
       EksInstanceSubnets:
         default: Private Subnets from the EKS VPC
@@ -27,15 +27,15 @@ Parameters:
   EksClusterName:
     Description: Existing EKS cluster name
     Type: String
-  VpcId:
-    Description: VpcId to deploy into
+  VpcID:
+    Description: VpcId of the EKS cluster to deploy into
     Type: 'AWS::EC2::VPC::Id'
-  VpcCidr:
+  VpcIPCidr:
     Description: 'Enter VPC CIDR that hosts the EKS cluster. Ex: 10.0.0.0/16'
     Type: String
   EksInstanceSubnets:
     Type: 'List<AWS::EC2::Subnet::Id>'
-    Description: Select all the subnets EKS utilizes
+    Description: Select all the subnets EKS utilizes. Recommended approach is to use only private subnets
     ConstraintDescription: >-
       Password must be at least 9 characters long and have 3 out of the
       following: one number, one lower case, one upper case, or one special
@@ -148,7 +148,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: For RDS Instance
-      VpcId: !Ref VpcId
+      VpcId: !Ref VpcID
       Tags:
       - Key: Name
         Value: RDS-SecurityGroup
@@ -160,4 +160,4 @@ Resources:
       IpProtocol: tcp
       FromPort: '5432'
       ToPort: '5432'
-      CidrIp: !Ref 'VpcCidr'
+      CidrIp: !Ref 'VpcIPCidr'
