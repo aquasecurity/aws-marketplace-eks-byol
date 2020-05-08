@@ -17,9 +17,14 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 - [Deployment considerations](#Deployment-considerations)
   - [EKS cluster](#1-EKS-cluster-environment)
-  - [Helm charts](#2-Helm-Charts)
-  - [Database deployment](#3-database-options)
+  - [AWS CLI](#2-Install-AWS-CLI)
+  - [Aqua License](#3-Aqua-license-and-registry-credentials)
+  - [Aquactl](#4-Install-Aquactl)
+  - [Database deployment](#5-database-options)
 - [Deployment scenarios](#deployment-Scenarios)
+  - [Scenario 1: Getting started with Aqua](#Scenario-1-Getting-started-with-Aqua)
+  - [Scenario 2: Production EKS Cluster](#Scenario-2-Production-EKS-Cluster)
+  - [Scenario 3: Production EKS Multi-Cluster](#Scenario-3-Production-EKS-Multi-Cluster)
 - [Verify Deployment](#verify-deployment)
 - [Post-deployment tasks](#post-deployment-tasks)
     - [Backup Auto-Generated Secrets](#1-backup-auto-generated-secrets)
@@ -56,13 +61,13 @@ chmod +x aquactl
 
 #### 5. Database Options
 
-This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#2-rds-requirements)
+This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#1-rds-requirements)
 
 
 ## Deployment Scenarios 
 All the scenarios need an EKS cluster to begin with. 
 
->Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
+>Note: You can spin up new one easily using [eksctl](#3-create-an-EKS-cluster)
 
 ### Scenario 1: Getting started with Aqua
 This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
@@ -75,10 +80,10 @@ This section is for you if you want to get started with Aqua and hit the ground 
   ### Deployment instructions
   For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However, this architecture is not scalable or resilient enough for production workloads.
 
-  >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
+  >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#2-extend-eks-with-an-ebs-supported-storageclass)  
 
   #### 1. Access the EKS cluster
-  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Work on an existing EKS cluster or [spin up a new one](#3-create-an-EKS-cluster).
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -98,13 +103,14 @@ This section is for you if you want to get started with Aqua and hit the ground 
   ![aquactl output](images/aquactl-internalDB.png)
 
   #### 3. Verify Deployment
-  You can verify the deployment by checking the aqua namespace on your EKS cluster
+  You can verify the deployment by checking the aqua namespace on your EKS cluster. It might take several minutes for the External IP to get populated and the web interface to come live.
   ```shell
   $kubectl get deploy -n aqua
   NAME           READY   UP-TO-DATE   AVAILABLE   AGE
   aqua-db        1/1     1            1           18m
   aqua-gateway   1/1     1            1           18m
   aqua-web       1/1     1            1           18m
+
   $kubectl get svc -n aqua
   NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                        AGE
   aqua-db        ClusterIP      10.100.239.123   <none>                                                                   5432/TCP                       18m
@@ -114,8 +120,8 @@ This section is for you if you want to get started with Aqua and hit the ground 
 </details>
 
 ### Scenario 2: Production EKS Cluster
-This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
-A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
+This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#3-create-an-EKS-cluster)
+A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#1-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
 **<details><summary>Deployment Steps</summary>**
   ### Architecture Diagram
@@ -124,7 +130,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   ### Deployment instructions
   
   #### 1. Access the EKS cluster
-  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Work on an existing EKS cluster or [spin up a new one](#3-create-an-EKS-cluster).
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -158,7 +164,7 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   
   
   #### 1. Access the Workload EKS cluster
-  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Work on an existing EKS cluster or [spin up a new one](#3-create-an-EKS-cluster).
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -176,12 +182,10 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
 
 ## Verify Deployment
 
-Helm will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximately five minutes. The time-consuming part of the deployment is the ELB recognizing the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possible in the AWS EC2 console. The AWS CLI counterpart may be used to poll status as well. Replace the `releaseName (CSP)` and `namespace (aqua)` with your variables if you so choose.
-
->Note: The `helm install` command will output similar commands with these variables pre-populated.
+Helm will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximately five minutes. The time-consuming part of the deployment is the ELB recognizing the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possible in the AWS EC2 console. The AWS CLI counterpart may be used to poll status as well.
 
 ```shell
-EKSELB=$(kubectl get svc csp-aqua-console --namespace aqua -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"|sed 's/-.*//')
+EKSELB=$(kubectl get svc aqua-web --namespace aqua -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"|sed 's/-.*//')
   
 aws elb describe-instance-health --load-balancer-name $EKSELB
 ```
@@ -221,13 +225,28 @@ When the Instance State is operational, the below output will match.
 ### 1. Backup Auto-Generated Secrets
 
 There are four secrets generated: `admin password, database password, enforcer token` and `registry auth` which is used by the docker pull service account.
+```shell
+$kubectl get secrets -n aqua
+NAME                  TYPE                                  DATA   AGE
+aqua-admin            Opaque                                1      101m
+aqua-db               Opaque                                1      101m
+aqua-registry         kubernetes.io/dockerconfigjson        1      101m
+aqua-sa-token-chfxl   kubernetes.io/service-account-token   3      101m
+default-token-smf4r   kubernetes.io/service-account-token   3      101m
+enforcer-token        Opaque                                1      101m
+
+$kubectl get serviceaccount -n aqua
+NAME      SECRETS   AGE
+aqua-sa   1         102m
+default   1         102m
+```
 
 By default the Aqua PostgreSQL container utilizes a persistent volume (PVC). When removing the application, this PVC is not deleted along with the other components in order to save your data.
 In the case of a re-deploy, reloading these secrets will be necessary to access the DB files on the reused PVC. It is **very important** to back up the database password secrets for this purpose.
 Please back them up ***now***. See the [ReDeploying Aqua CSP](#ReDeploying-Aqua-CSP) section for redeployment instructions.
 
 ```shell
-kubectl get secrets -l secretType=aquaSecurity \
+kubectl get secrets -l deployedby=aquactl \
 --namespace aqua -o json > aquaSecrets.json
 ```
 ### 2. Obtain the Aqua Command Center administrator password
@@ -235,7 +254,7 @@ kubectl get secrets -l secretType=aquaSecurity \
 The default username is `administrator`. Use `kubectl` to extract the generated password from the secret.
 
 ```shell
-kubectl get secret csp-admin-password --namespace aqua -o json | jq -r .data.password | base64 -D
+kubectl get secret aqua-admin --namespace aqua -o json | jq -r .data.password | base64 -D
 ```
 
 
@@ -244,7 +263,7 @@ kubectl get secret csp-admin-password --namespace aqua -o json | jq -r .data.pas
 A user may run the following command:
 
 ```shell
-AQUA_CONSOLE=$(kubectl get svc csp-aqua-console --namespace aqua -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+AQUA_CONSOLE=$(kubectl get svc aqua-web --namespace aqua -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
   
 ECHO "http://$AQUA_CONSOLE:8080"
 ```
@@ -262,7 +281,7 @@ Users that previously registered for a license token for use with AWS Container 
 Sometimes an Admin just needs to read some logs. While these are accessible in the Aqua Console under Settings > Logs, should you need to the access logs of the Aqua server pod via CLI, use the below command:
 
 ```shell
-CONSOLEPOD=$(kubectl get pods -l app=csp-aqua-console -n aqua --no-headers -o=custom-columns=NAME:.metadata.name)
+CONSOLEPOD=$(kubectl get pods -l app=aqua-web -n aqua --no-headers -o=custom-columns=NAME:.metadata.name)
 kubectl logs -f ${CONSOLEPOD} --namespace=aqua
 ```
 
@@ -307,28 +326,27 @@ To redeploy Aqua CSP and reattach the previously utilized PV, one may utilize th
 1. Backup then Delete your existing secrets and services
 
 ```shell
-kubectl get secrets -l secretType=aquaSecurity \
+kubectl get secrets -l deployedby=aquactl \
 --namespace aqua -o json > aquaSecrets.json
 
 cat aquaSecrets.json (or use your favorite editor to validate content)
 
 kubectl delete -f aquaSecrets.json
-kubectl delete sa -n aqua csp-sa
+kubectl delete sa -n aqua aqua-sa
 ```
 
 2. Obtain the PVC information and Helm release name to reuse
 
 ```shell
-kubectl get pvc -n aqua
-
-NAME               STATUS   VOLUME
-csp-database-pvc   Bound    pvc-df93aca6-d6fa-11e8-a39b-0a14904e5754
+$kubectl get pvc -n aqua
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+aqua-db-pvc    Bound    pvc-cea2fc51-deaa-44c1-9ef9-4a5875a967f5   10Gi       RWO            gp2            3h
 ```
 
 3. Delete the PVC
 
 ```shell
-kubectl delete pvc -n aqua csp-database-pvc
+kubectl delete pvc -n aqua aqua-db-pvc
 ```
 
 4. Obtain the PV name
@@ -373,10 +391,10 @@ NAME                                     CAPACITY ACCESS MODES RECLAIM POLICY ST
 pvc-df93aca6-d6fa-11e8-a39b-0a14904e5754 50Gi     RWO          Available         Released
 ```
 
-7. Run the helm installer with the `exact same release name`
+7. Run the aquactl installer with the `exact same name`
 
 ```shell
-helm install --namespace aqua --name csp ./aqua
+aquactl deploy csp
  ```
 
 8. Wait 15 seconds, then reapply the secrets from your backup file.
@@ -385,44 +403,26 @@ helm install --namespace aqua --name csp ./aqua
 kubectl apply -f aquaSecrets.json
 ```
  
-9. Check the console as in the above installation section [Complete Initial Deployment](#Complete-Initial-Deployment)
-
+9. Check the console as in the above installation section [Verify Deployment](#verify-Deployment)
 
 ## Uninstalling Aqua CSP
 
 Uninstalling the Aqua CSP and all components may be performed by the following functions:
 
-Delete the helm release
-
-```shell
-Helm delete csp
-```
-
-Delete the namespace
+Delete the CSP deployment
 
 ```shell
 kubectl delete ns aqua
 ```
 
-Remove any EBS volumes via the AWS CLI or Console
+Remove any EBS volumes, LoadBalancers via the AWS CLI or Console
 
 ## Support
 If you encounter any problems, or would like to give us feedback, please contact cloud support at [Cloud Sales](mailto:cloudsupport@aquasec.com). We also encourage you to raise issues here on GitHub. Please contact us at https://github.com/aquasecurity.
 
 ## Appendix
-### 1. Configure Tiller
 
-**For Helm 2.x**
-
-Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
-
-```bash
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-```
-
-### 2. RDS requirements
+### 1. RDS requirements
 A production-grade Aqua CSP deployment requires a managed Postgres database installation. The RDS instance should exist in the same VPC as the EKS cluster hosting your Aqua CSP deployment.
   ```bash
   1. Engine type: PostgreSQL
@@ -437,7 +437,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
   ```
 
-### 3. Extend EKS with an EBS supported StorageClass
+### 2. Extend EKS with an EBS supported StorageClass
 
 If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary.
 
@@ -448,7 +448,7 @@ EKS does not ship with any StorageClasses for clusters that were created prior t
 kubectl create -f gp2-storage-class.yaml
 ```
 
-### 4. Create an EKS cluster
+### 3. Create an EKS cluster
 Creation of an EKS cluster can be simplified using eksctl commands: [https://eksctl.io/]. 
 
 If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
