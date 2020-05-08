@@ -70,7 +70,7 @@ This section is for you if you want to get started with Aqua and hit the ground 
 **<details><summary>Deployment Steps</summary>**
 
   ### Architecture Diagram
-  ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario1.png)
+  ![Deployment Scenario 1](images/Deployment_Scenario1.png)
 
   ### Deployment instructions
   For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However, this architecture is not scalable or resilient enough for production workloads.
@@ -95,8 +95,22 @@ This section is for you if you want to get started with Aqua and hit the ground 
   aquactl deploy csp
   ```
   Here's an example of how the output looks like:
-  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-internaldb-output.png)
+  ![aquactl output](images/aquactl-internalDB.png)
 
+  #### 3. Verify Deployment
+  You can verify the deployment by checking the aqua namespace on your EKS cluster
+  ```shell
+  $kubectl get deploy -n aqua
+  NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+  aqua-db        1/1     1            1           18m
+  aqua-gateway   1/1     1            1           18m
+  aqua-web       1/1     1            1           18m
+  $kubectl get svc -n aqua
+  NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                        AGE
+  aqua-db        ClusterIP      10.100.239.123   <none>                                                                   5432/TCP                       18m
+  aqua-gateway   ClusterIP      10.100.2.103     <none>                                                                   8443/TCP,3622/TCP              18m
+  aqua-web       LoadBalancer   10.100.149.125   a8aa7af13b602467bb18161ab7c75d8e-340274804.us-east-1.elb.amazonaws.com   443:31254/TCP,8080:31209/TCP   18m
+```
 </details>
 
 ### Scenario 2: Production EKS Cluster
@@ -105,7 +119,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
 
 **<details><summary>Deployment Steps</summary>**
   ### Architecture Diagram
-  ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png) 
+  ![Deployment Scenario 2](images/Deployment_Scenario2.png) 
 
   ### Deployment instructions
   
@@ -138,7 +152,7 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
 **<details><summary>Deployment Steps</summary>**
 
   ### Architecture Diagram
-  ![Deployment Scenario 3](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario3.png)
+  ![Deployment Scenario 3](images/Deployment_Scenario3.png)
 
   ### Deployment instructions
   
