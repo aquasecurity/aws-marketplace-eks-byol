@@ -36,30 +36,27 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 ## Deployment considerations
 
-### 1. EKS cluster environment
+#### 1. EKS cluster environment
 Aqua can be deployed on an existing EKS cluster to secure your running workload or you can choose to deploy Aqua on a separate EKS environment than that of the workloads.
 
-### 2. Install AWS CLI
+#### 2. Install AWS CLI
 ```shell
 pip install awscli --upgrade --user
 ```
 
-### 3. Aqua license and registry credentials
+#### 3. Aqua license and registry credentials
 This installation needs an existing Aqua CSP license as well as the registry credentials to pull images from Aqua's private registry. If you do not already have them, please reach out to Aqua at [Cloud Sales](mailto:cloudsales@aquasec.com)
 
-### 4. Install Aquactl
-Aquactl is a command line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
-You can get the latest helm installation [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl).
-Make it executable
+#### 4. Install Aquactl
+Aquactl is a command-line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
+You can get the latest [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl) binary and make it executable.
 ```shell
 chmod +x aquactl
 ```
 
-### 5. Database Options
+#### 5. Database Options
 
-This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios.
-
-For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#2-rds-requirements)
+This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#2-rds-requirements)
 
 
 ## Deployment Scenarios 
@@ -70,7 +67,7 @@ All the scenarios need an EKS cluster to begin with.
 ### Scenario 1: Getting started with Aqua
 This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
 
-**<details><summary>Deployment</summary>**
+**<details><summary>Deployment Steps</summary>**
 
   ### Architecture Diagram
   ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario1.png)
@@ -97,6 +94,7 @@ This section is for you if you want to get started with Aqua and hit the ground 
   ```shell
   aquactl deploy csp
   ```
+  Here's an example of how the output looks like:
   ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-internaldb-output.png)
 
 </details>
@@ -105,7 +103,7 @@ This section is for you if you want to get started with Aqua and hit the ground 
 This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
-**<details><summary>Deployment</summary>**
+**<details><summary>Deployment Steps</summary>**
   ### Architecture Diagram
   ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png) 
 
@@ -119,6 +117,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   ``` 
   
   #### 2. Create RDS instance
+  Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
   [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
 
   #### 3. Deploy Aqua CSP
@@ -126,15 +125,17 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   ```shell
   aquactl deploy csp
   ```
+  Here's an example of how the output looks like:
   ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
 </details>
 
 ### Scenario 3: Production EKS Multi-Cluster
-This section is for you if you have multiple EKS clusters in your environment and want to secure them using Aqua.
-Once Aqua CSP is deployed you can manage the other EKS clusters in your environment by installing an Aqua agent on them.
+This section is for you if you have multiple EKS clusters in your environment and want to use Aqua as a single pane of glass solution to manage and secure all of them. 
 
-**<details><summary>Deployment</summary>**
+Since now multiple cloud-native environments are communicating back to Aqua, the aqua-gateway component also has to be exposed along with the Web interface. Aquactl enables you to do that with an additional flag. Once Aqua CSP is deployed you can manage the other EKS clusters by installing an Aqua agent on them that can connect back to the Aqua control-plane. 
+
+**<details><summary>Deployment Steps</summary>**
 
   ### Architecture Diagram
   ![Deployment Scenario 3](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario3.png)
@@ -154,6 +155,7 @@ Once Aqua CSP is deployed you can manage the other EKS clusters in your environm
   ```shell
   aquactl deploy csp --gateway-service LoadBalancer
   ```
+  Here's an example of how the output looks like:
   ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
 </details>
@@ -407,7 +409,7 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 ```
 
 ### 2. RDS requirements
-A production-grade Aqua CSP deployment requires a managed Postgres database installation.
+A production-grade Aqua CSP deployment requires a managed Postgres database installation. The RDS instance should exist in the same VPC as the EKS cluster hosting your Aqua CSP deployment.
   ```bash
   1. Engine type: PostgreSQL
   2. Version: 9.6.9

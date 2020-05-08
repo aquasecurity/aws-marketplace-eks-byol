@@ -1,5 +1,6 @@
 # Aqua Container Security Platform (CSP) for Amazon EKS
-This document is for Aqua CSP version 4.6.20099.
+This document is for Aqua CSP version 4.6.20099. Before you begin, make sure you have a AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
+
 
 Aqua EKS BYOL listing enables you to add security capabilities to your existing cloud-native workloads on EKS cluster environment. Aqua replaces outdated signature-based approaches with modern controls that leverage the cloud-native principles of immutability, microservices and portability.
 
@@ -14,14 +15,11 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 
 ## Contents
 
-- [Prerequisites](#prerequisites)
+- [Deployment considerations](#Deployment-considerations)
   - [EKS cluster](#1-EKS-cluster-environment)
-  - [Helm charts](#2-helm-charts)
-  - [Database considerations](#3-database-options)
-  - [Secrets and Service account](#4-secrets-and-service-account)
-- [Deployment instructions](#deployment-instructions)
-  - [Aqua namespace creation](#1-create-aqua-namespace)
-  - [Helm chart installation](#2-install-helm-chart)
+  - [Helm charts](#2-Helm-Charts)
+  - [Database deployment](#3-database-options)
+- [Deployment scenarios](#deployment-Scenarios)
 - [Verify Deployment](#verify-deployment)
 - [Post-deployment tasks](#post-deployment-tasks)
     - [Backup Auto-Generated Secrets](#1-backup-auto-generated-secrets)
@@ -34,142 +32,133 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
   - [Aqua PostgreSQL container in use](#Aqua-PostgreSQL-container-in-use)
 - [Uninstalling Aqua CSP](#Uninstalling-Aqua-CSP)
 - [Support](#support)
+- [Appendix](#appendix)
 
-## Prerequisites
+## Deployment considerations
 
-* EKS cluster environment
-* A current installation of [Helm](https://helm.sh/)
-* EKS role binding appropriate for Helm's use
-* Database options
-* Extend EKS with a StorageClass that supports EBS
-* AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
+#### 1. EKS cluster environment
+Aqua can be deployed on an existing EKS cluster to secure your running workload or you can choose to deploy Aqua on a separate EKS environment than that of the workloads.
 
-### 1. EKS cluster environment
-You can choose to secure an existing EKS environment by installing Aqua in a separate namespace on the same EKS cluster. In case you choose to run Aqua CSP in a separate EKS cluster, please create an EKS environment using eksctl commands: [https://eksctl.io/]
-
-#### Create new EKS cluster
-A single Aqua CSP installation can be used to connect to several different cloud-native workloads. If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
-
-You can use a cluster config file:
+#### 2. Install AWS CLI
 ```shell
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
-
-metadata:
-  name: cluster-with-private-ng
-  region: us-east-1
-
-vpc:
-  nat:
-    gateway: HighlyAvailable # other options: Disable, Single (default)
-
-nodeGroups:
-  - name: ng-1-workers
-    labels: { role: workers }
-    instanceType: m5.xlarge
-    desiredCapacity: 10
-    privateNetworking: true # if only 'Private' subnets are given, this must be enabled
-    ssh: # use existing EC2 key
-      publicKeyName: <EC2-keypair-name>
+pip install awscli --upgrade --user
 ```
 
-Run the following command to create the cluster
+#### 3. Aqua license and registry credentials
+This installation needs an existing Aqua CSP license as well as the registry credentials to pull images from Aqua's private registry. If you do not already have them, please reach out to Aqua at [Cloud Sales](mailto:cloudsales@aquasec.com)
+
+#### 4. Install Aquactl
+Aquactl is a command-line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
+You can get the latest [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl) binary and make it executable.
 ```shell
-eksctl create cluster -f cluster.yaml
+chmod +x aquactl
 ```
 
-### 2. Helm Charts
+#### 5. Database Options
 
-####  2.1 Acquiring the charts
+This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#2-rds-requirements)
 
-The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
 
-```shell
-git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
-```
+## Deployment Scenarios 
+All the scenarios need an EKS cluster to begin with. 
 
-####  2.2 Helm EKS Role Binding
+>Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
-#### Using helm with EKS requires providing a service account for use by Tiller
+### Scenario 1: Getting started with Aqua
+This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
 
-* For Helm 3.x, Tiller is not required for the Helm installation.
+**<details><summary>Deployment Steps</summary>**
 
-* For Helm 2.x
-Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
+  ### Architecture Diagram
+  ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario1.png)
 
-```bash
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-```
+  ### Deployment instructions
+  For testing purposes, the Helm chart installation provides a starter environment that includes a database container for Postgres. It utilizes a persistent volume in order to store the data. However, this architecture is not scalable or resilient enough for production workloads.
 
-### 3. Database Options
+  >Note: For EKS clusters with Kubernetes version below 1.11 please refer to [storage class creation](#3-extend-eks-with-an-ebs-supported-storageclass)  
 
-This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated database such as Amazon RDS. 
+  #### 1. Access the EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Get the kubeconfig file
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ``` 
 
-####  3.1 RDS requirements
-A production-grade Aqua CSP deployment requires a managed Postgres database installation. Following are the requirements:
-```bash
-1. Engine type: PostgreSQL
-2. Version: 9.6.9
-3. DB instance size: Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
-                                   db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge, db.m4.16xlarge,
-                                   db.r4.large, db.r4.xlarge, db.r4.2xlarge, db.r4.4xlarge, db.r4.8xlarge, db.r4.16xlarge,
-                                   db.r3.large, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge]
-4. Storage type: General Purpose or Provisioned IOPS based on the environment
-5. Allocated storage: 40GB (minimum)
-6. Multi-AZ deployment: enabled/disabled based on the environment
-7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
-```
+  Verify the node status
+  ```shell
+  kubectl get nodes
+  ```
 
-The helm chart may be modified to utilize such an external instance by modifying the file *aws-marketplace-eks-byol/aqua/values.yaml*, section *dbExternalServiceHost* as in the example below.
+  #### 2. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation
+  ```shell
+  aquactl deploy csp
+  ```
+  Here's an example of how the output looks like:
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-internaldb-output.png)
 
-```shell
-dbExternalServiceHost:"<myserver>.CB2XKFSFFMY7.US-WEST-2.RDS.AMAZONAWS.COM"
-```
+</details>
 
-####  3.2 Extend EKS with an EBS supported StorageClass
+### Scenario 2: Production EKS Cluster
+This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
+A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
-If you are using an external PostgreSQL provider such as RDS this step is unnecessary. If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary. 
+**<details><summary>Deployment Steps</summary>**
+  ### Architecture Diagram
+  ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png) 
 
-Per [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html)
-EKS does not ship with any StorageClasses for clusters that were created prior to Kubernetes version 1.11. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternatively, edit the database chart to utilize your own StorageClass.
+  ### Deployment instructions
+  
+  #### 1. Access the EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Get the kubeconfig file
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ``` 
+  
+  #### 2. Create RDS instance
+  Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
+  [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
 
-```shell
-kubectl create -f gp2-storage-class.yaml
-```
+  #### 3. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation
+  ```shell
+  aquactl deploy csp
+  ```
+  Here's an example of how the output looks like:
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
-### 4. Secrets and Service Account
+</details>
 
-Please ignore this section if you are deploying to EKS from the AWS Marketplace (AWS MP) directly. The following section describing the Docker ImagePullSecrets is unnecessary as AWS MP authorizes the image pull from the AWS MP ECR.
+### Scenario 3: Production EKS Multi-Cluster
+This section is for you if you have multiple EKS clusters in your environment and want to use Aqua as a single pane of glass solution to manage and secure all of them. 
 
-Only if you want to use a privately hosted repository for the Aqua images, refer to this section. The Aqua console components are hosted on a private repository: `registry.aquasec.com`. As such a service account and associated Docker ImagePullSecrets are required to be created. The Helm chart does this for you. Edit the *aws-marketplace-eks-byol/aqua/values.yaml* to include the credentials that were granted permission to download from Aqua Security's private repository. Many customers also utilize privately hosted registries. If this is your scenario, change the `registry:` variable to match as well.
+Since now multiple cloud-native environments are communicating back to Aqua, the aqua-gateway component also has to be exposed along with the Web interface. Aquactl enables you to do that with an additional flag. Once Aqua CSP is deployed you can manage the other EKS clusters by installing an Aqua agent on them that can connect back to the Aqua control-plane. 
 
-```shell
-  imageCredentials:
-    registry: "registry.aquasec.com"
-    username: "example@aquasec.com"
-    password: "k8s4allis@sh0rtP@ssword"
-```
+**<details><summary>Deployment Steps</summary>**
 
-## Deployment instructions
+  ### Architecture Diagram
+  ![Deployment Scenario 3](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario3.png)
 
-### 1. Create aqua namespace
-```shell
-kubectl create ns aqua
-```
+  ### Deployment instructions
+  
+  
+  #### 1. Access the Workload EKS cluster
+  Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
+  Get the kubeconfig file
+  ```shell
+  eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
+  ```
 
-### 2. Install Helm chart
+  #### 2. Deploy Aqua CSP
+  The aquactl utility provides an interactive experience that allows you to configure the CSP installation. For multi-cluster environments, we need to expose the Aqua Gateway service as a LoadBalancer.
+  ```shell
+  aquactl deploy csp --gateway-service LoadBalancer
+  ```
+  Here's an example of how the output looks like:
+  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
 
-* For Helm 2.x
-```
-helm install --namespace aqua --name csp ./aqua
-```
-
-* For Helm 3.x
-```
-helm install --namespace aqua csp ./aqua
-```
+</details>
 
 ## Verify Deployment
 
@@ -236,7 +225,6 @@ kubectl get secret csp-admin-password --namespace aqua -o json | jq -r .data.pas
 ```
 
 
-
 ### 3. Obtain the Aqua Command Center web URL
 
 A user may run the following command:
@@ -293,7 +281,7 @@ kubectl delete -f aquaSecrets.json
 kubectl apply -f aquaSecrets.json
 ```
  
-4. Check the console as in the above installation section [Complete Initial Deployment](#Complete-Initial-Deployment)
+4. Check the console as in the above installation section [Verify Deployment](#verify-Deployment)
 
 
 ### Aqua PostgreSQL container in use
@@ -406,3 +394,90 @@ Remove any EBS volumes via the AWS CLI or Console
 
 ## Support
 If you encounter any problems, or would like to give us feedback, please contact cloud support at [Cloud Sales](mailto:cloudsupport@aquasec.com). We also encourage you to raise issues here on GitHub. Please contact us at https://github.com/aquasecurity.
+
+## Appendix
+### 1. Configure Tiller
+
+**For Helm 2.x**
+
+Run the following commands to create the requisite SA for Tiller and give it appropriate permissions:
+
+```bash
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+```
+
+### 2. RDS requirements
+A production-grade Aqua CSP deployment requires a managed Postgres database installation. The RDS instance should exist in the same VPC as the EKS cluster hosting your Aqua CSP deployment.
+  ```bash
+  1. Engine type: PostgreSQL
+  2. Version: 9.6.9
+  3. DB instance size: Allowed values[db.t2.micro, db.t2.small, db.t2.medium, db.t2.large, db.t2.xlarge, db.t2.2xlarge,
+                                   db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge, db.m4.16xlarge,
+                                   db.r4.large, db.r4.xlarge, db.r4.2xlarge, db.r4.4xlarge, db.r4.8xlarge, db.r4.16xlarge,
+                                   db.r3.large, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge]
+  4. Storage type: General Purpose or Provisioned IOPS based on the environment
+  5. Allocated storage: 40GB (minimum)
+  6. Multi-AZ deployment: enabled/disabled based on the environment
+  7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
+  ```
+
+### 3. Extend EKS with an EBS supported StorageClass
+
+If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary.
+
+Per [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html)
+EKS does not ship with any StorageClasses for clusters that were created prior to Kubernetes version 1.11. Included in the git repo is the file *aws-marketplace-eks-byol/gp2-storage-class.yaml*. Apply this file to add support for EBS volumes and set the gp2 StorageClass as default for the cluster. Alternatively, edit the database chart to utilize your own StorageClass.
+
+```shell
+kubectl create -f gp2-storage-class.yaml
+```
+
+### 4. Create an EKS cluster
+Creation of an EKS cluster can be simplified using eksctl commands: [https://eksctl.io/]. 
+
+If you choose to use a separate EKS environment solely to host the Aqua CSP platform, then it is recommended that you create a private nodegroup in your EKS cluster and use a NAT gateway for communication.
+
+You can use a cluster config file. Make sure to update the node requirements as well as EC2 Keypair for SSH access into the nodes
+```shell
+# eks-cluster.yaml
+# A cluster with a managed nodegroup and private networking.
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: Eks-cluster
+  region: us-east-1
+
+# Multiple AZ's can be added here except for us-east-1e which doesn't support EKS
+availabilityZones:
+  - "us-east-1a"
+  - "us-east-1b"
+
+managedNodeGroups:
+  - name: managed-ng-1
+    minSize: 1
+    maxSize: 2
+    desiredCapacity: 2
+    volumeSize: 20
+    ssh:
+      allow: true
+      publicKeyName: <EC2_keypair>
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        externalDNS: true
+        certManager: true
+```
+
+Run the following command to create the cluster
+```shell
+eksctl create cluster -f eks-cluster.yaml --write-kubeconfig=true
+```
+
+>Note: If you get an error related to `UnsupportedAvailabilityZoneException` you can use the CLI command instead:
+```shell
+eksctl create cluster --name Aqua-eks-private --region us-east-1 --zones us-east-1a,us-east-1b --nodegroup-name private-ng1 --nodes 2 --ssh-public-key manasip-euskey --node-private-networking --vpc-nat-mode HighlyAvailable
+```
