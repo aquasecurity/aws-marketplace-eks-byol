@@ -44,7 +44,10 @@ Aqua can be deployed on an existing EKS cluster to secure your running workload 
 pip install awscli --upgrade --user
 ```
 
-### 3. Install Aquactl
+### 3. Aqua license and registry credentials
+This installation needs an existing Aqua CSP license as well as the registry credentials to pull images from Aqua's private registry. If you do not already have them, please reach out to Aqua at [Cloud Sales](mailto:cloudsales@aquasec.com)
+
+### 4. Install Aquactl
 Aquactl is a command line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
 You can get the latest helm installation [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl).
 Make it executable
@@ -52,7 +55,7 @@ Make it executable
 chmod +x aquactl
 ```
 
-### 4. Database Options
+### 5. Database Options
 
 This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios.
 
@@ -60,12 +63,14 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
 
 ## Deployment Scenarios 
+All the scenarios need an EKS cluster to begin with. 
 
-**<details><summary>Scenario 1: Getting started with Aqua</summary>**
-  This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster
+>Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
 
+### Scenario 1: Getting started with Aqua
+This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
 
-  >Note: You can spin one up easily using [eksctl](#4-create-an-EKS-cluster)
+**<details><summary>Deployment</summary>**
 
   ### Architecture Diagram
   ![Deployment Scenario 1](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario1.png)
@@ -96,17 +101,15 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
 </details>
 
-**<details><summary><b>Scenario 2: Production EKS Cluster</b></summary>**
-  This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
+### Scenario 2: Production EKS Cluster
+This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#4-create-an-EKS-cluster)
+A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
-  A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#2-RDS-requirements) for RDS requirements.
-  You can also use this CloudFormation template as a quickstart to get RDS deployed.
-
+**<details><summary>Deployment</summary>**
   ### Architecture Diagram
-  ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png)
+  ![Deployment Scenario 2](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario2.png) 
 
   ### Deployment instructions
-  
   
   #### 1. Access the EKS cluster
   Work on an existing EKS cluster or [spin one up](#4-create-an-EKS-cluster).
@@ -118,14 +121,7 @@ For production deployments Aqua recommends implementing a dedicated managed data
   #### 2. Create RDS instance
   [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
 
-  #### 3. Acquiring Helm chart
-  The Aqua console components are non-FOSS, therefore this chart is not available in the Helm package repository.  However, you may simply clone this repository and install via Helm from this collection.
-
-  ```shell
-  git clone https://github.com/aquasecurity/aws-marketplace-eks-byol.git
-  ```
-
-  #### 2. Deploy Aqua CSP
+  #### 3. Deploy Aqua CSP
   The aquactl utility provides an interactive experience that allows you to configure the CSP installation
   ```shell
   aquactl deploy csp
@@ -134,9 +130,11 @@ For production deployments Aqua recommends implementing a dedicated managed data
 
 </details>
 
-**<details><summary><b>Scenario 3: Production EKS Multi-Cluster</b></summary>**
-  This section is for you if you have multiple EKS clusters in your environment and want to secure them using Aqua. For Aqua deployment, you can follow the instructions in [Scenario 2](#deployment-instructions-1)
-  Once Aqua CSP is deployed you can manage the other EKS clusters in your environment by installing an Aqua agent on them.
+### Scenario 3: Production EKS Multi-Cluster
+This section is for you if you have multiple EKS clusters in your environment and want to secure them using Aqua.
+Once Aqua CSP is deployed you can manage the other EKS clusters in your environment by installing an Aqua agent on them.
+
+**<details><summary>Deployment</summary>**
 
   ### Architecture Diagram
   ![Deployment Scenario 3](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/Deployment_Scenario3.png)
