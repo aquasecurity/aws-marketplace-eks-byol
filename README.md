@@ -138,6 +138,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   
   #### 2. Create RDS instance
   Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
+
   [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
 
   #### 3. Deploy Aqua CSP
@@ -170,7 +171,13 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
   ```
 
-  #### 2. Deploy Aqua CSP
+  #### 2. Create RDS instance
+  Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
+  
+  [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
+
+
+  #### 3. Deploy Aqua CSP
   The aquactl utility provides an interactive experience that allows you to configure the CSP installation. For multi-cluster environments, we need to expose the Aqua Gateway service as a LoadBalancer.
   ```shell
   aquactl deploy csp --gateway-service LoadBalancer
@@ -243,7 +250,7 @@ default   1         102m
 
 By default the Aqua PostgreSQL container utilizes a persistent volume (PVC). When removing the application, this PVC is not deleted along with the other components in order to save your data.
 In the case of a re-deploy, reloading these secrets will be necessary to access the DB files on the reused PVC. It is **very important** to back up the database password secrets for this purpose.
-Please back them up ***now***. See the [ReDeploying Aqua CSP](#ReDeploying-Aqua-CSP) section for redeployment instructions.
+Please back them up ***now***. See the [ReDeploying Aqua CSP](#Re-deploying-Aqua-CSP) section for redeployment instructions.
 
 ```shell
 kubectl get secrets -l deployedby=aquactl \

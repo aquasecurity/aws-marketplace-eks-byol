@@ -1,4 +1,0 @@
-# Agent is the Aqua Enforcer component. Enforcers are installed in kubernets as daemon sets.
-# 
-enforcer:
-  image: ""
