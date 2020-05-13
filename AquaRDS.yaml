@@ -31,7 +31,7 @@ Parameters:
     Description: VpcId of the EKS cluster to deploy into
     Type: 'AWS::EC2::VPC::Id'
   VpcIPCidr:
-    Description: 'Enter VPC CIDR that hosts the EKS cluster. Ex: 10.0.0.0/16'
+    Description: 'Enter VPC CIDR that hosts the EKS cluster. Ex: 192.168.0.0/16'
     Type: String
   EksInstanceSubnets:
     Type: 'List<AWS::EC2::Subnet::Id>'
@@ -161,3 +161,13 @@ Resources:
       FromPort: '5432'
       ToPort: '5432'
       CidrIp: !Ref 'VpcIPCidr'
+Outputs:
+  RdsInstanceEndpoint:
+    Description: Postgres endpoint for Aqua CSP
+    Value: !Fn::GetAtt Endpoint.Address
+  RdsInstancePort:
+    Description: Postgres port for Aqua CSP
+    Value: !Fn::GetAtt Endpoint.Port
+  RdsInstanceUser:
+    Description: Username for the RDS instance
+    Value: !Ref RdsMasterUsername

@@ -33,8 +33,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
     - [Enter the license to enable the product](#4-Enter-the-license-to-enable-the-product)
     - [Verify the Aqua installation](#5-Verify-the-Aqua-installation)
 - [Re-deploying Aqua CSP](#Re-deploying-Aqua-CSP)
-  - [External PostgreSQL container in use](#External-PostgreSQL-container-in-use)
-  - [Aqua PostgreSQL container in use](#Aqua-PostgreSQL-container-in-use)
+  - [PostgreSQL instructions](#PostgreSQL-instructions)
 - [Uninstalling Aqua CSP](#Uninstalling-Aqua-CSP)
 - [Support](#support)
 - [Appendix](#appendix)
@@ -67,7 +66,7 @@ This helm chart includes an Aqua provided PostgreSQL database container for smal
 ## Deployment Scenarios 
 All the scenarios need an EKS cluster to begin with. 
 
->Note: You can spin up new one easily using [eksctl](#3-create-an-EKS-cluster)
+>Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl
 
 ### Scenario 1: Getting started with Aqua
 This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
@@ -120,7 +119,8 @@ This section is for you if you want to get started with Aqua and hit the ground 
 </details>
 
 ### Scenario 2: Production EKS Cluster
-This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to spin one up easily using [eksctl](#3-create-an-EKS-cluster)
+This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl. 
+
 A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#1-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
 **<details><summary>Deployment Steps</summary>**
@@ -130,7 +130,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   ### Deployment instructions
   
   #### 1. Access the EKS cluster
-  Work on an existing EKS cluster or [spin up a new one](#3-create-an-EKS-cluster).
+  Work on an existing EKS cluster or Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -147,8 +147,21 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   aquactl deploy csp
   ```
   Here's an example of how the output looks like:
-  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
+  ![aquactl output](images/aquactl-externalDB.png)
 
+  #### 3. Verify Deployment
+  You can verify the deployment by checking the aqua namespace on your EKS cluster. It might take several minutes for the External IP to get populated and the web interface to come live.
+  ```shell
+  $kubectl get deploy -n aqua
+  NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+  aqua-gateway   1/1     1            1           4m43s
+  aqua-web       1/1     1            1           4m43s
+
+  $kubectl get svc -n aqua
+  NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                        AGE
+  aqua-gateway   ClusterIP      10.100.195.172   <none>                                                                    8443/TCP,3622/TCP              4m45s
+  aqua-web       LoadBalancer   10.100.3.114     a5fb4ba393f45469b85d838b1a9ff236-1141983764.us-east-1.elb.amazonaws.com   443:30176/TCP,8080:31309/TCP   4m45s
+  ```
 </details>
 
 ### Scenario 3: Production EKS Multi-Cluster
@@ -165,7 +178,8 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   
   
   #### 1. Access the Workload EKS cluster
-  Work on an existing EKS cluster or [spin up a new one](#3-create-an-EKS-cluster).
+  Work on an existing EKS cluster or Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
+  
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -183,7 +197,21 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   aquactl deploy csp --gateway-service LoadBalancer
   ```
   Here's an example of how the output looks like:
-  ![aquactl output](https://github.com/manasiprabhavalkar/aws-marketplace-eks-byol/blob/version4.6.20099/aquactl-output.png)
+  ![aquactl output](images/aquactl-multiCluster.png)
+
+  #### 3. Verify Deployment
+  You can verify the deployment by checking the aqua namespace on your EKS cluster. It might take several minutes for the External IP to get populated and the web interface to come live.
+  ```shell
+  $kubectl get deploy -n aqua
+  NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+  aqua-gateway   1/1     1            1           4m33s
+  aqua-web       1/1     1            1           4m33s
+
+  $kubectl get svc -n aqua
+  NAME           TYPE           CLUSTER-IP      EXTERNAL-IP                                                               PORT(S)                         AGE
+  aqua-gateway   LoadBalancer   10.100.38.65    ad0da4fc6eb274a7d9b51ebb5c9c8edf-1369921645.us-east-1.elb.amazonaws.com   8443:32505/TCP,3622:30392/TCP   4m38s
+  aqua-web       LoadBalancer   10.100.111.78   a0c6db5b2c6e4418790c478f17f9453e-159603438.us-east-1.elb.amazonaws.com    443:31283/TCP,8080:31222/TCP    4m38s
+  ```
 
 </details>
 
@@ -293,7 +321,8 @@ kubectl logs -f ${CONSOLEPOD} --namespace=aqua
 ```
 
 ## Re-deploying Aqua CSP
-### External PostgreSQL container in use
+### PostgreSQL instructions
+**<details><summary>External PostgreSQL container in use</summary>**
 
 Redeploying when utilizing an external PostgreSQL is detailed below. One must either edit or replace the secrets that allow the components to communicate.
 
@@ -322,9 +351,9 @@ kubectl apply -f aquaSecrets.json
 ```
  
 4. Check the console as in the above installation section [Verify Deployment](#verify-Deployment)
+</details>
 
-
-### Aqua PostgreSQL container in use
+**<details><summary>Aqua PostgreSQL container in use</summary>**
 
 The Aqua provided PostgreSQL container uses a Persistent Volume Claim (PVC) set to `retain` upon `helm delete` in order to safe-guard inadvertent database loss. A [PVC](https://kubernetes.io/docs/concepts/storage/volumes/#creating-an-ebs-volume) is a mechanism within Kubernetes that allows an application to mount a persistent volume (PV) as a Kubernetes volume. This grants the PV reusability, among other capabilities.
 
@@ -411,6 +440,7 @@ kubectl apply -f aquaSecrets.json
 ```
  
 9. Check the console as in the above installation section [Verify Deployment](#verify-Deployment)
+</details>
 
 ## Uninstalling Aqua CSP
 
