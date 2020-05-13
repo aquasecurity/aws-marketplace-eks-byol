@@ -1,5 +1,0 @@
-# console is the Aqua server component
-console:
-  image: ""
-  servicePort: 8080
-  containerPort: 8080
