@@ -66,7 +66,7 @@ This helm chart includes an Aqua provided PostgreSQL database container for smal
 ## Deployment Scenarios 
 All the scenarios need an EKS cluster to begin with. 
 
->Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl
+>Note: You can spin up a [new cluster](#3-create-an-EKS-cluster) easily using eksctl
 
 ### Scenario 1: Getting started with Aqua
 This section is for you if you want to get started with Aqua and hit the ground running. Aqua in a box will allow you to have a sneak peak into Aqua's capabilities in securing your cloud-native workloads. All you need is an EKS cluster.
@@ -119,7 +119,7 @@ This section is for you if you want to get started with Aqua and hit the ground 
 </details>
 
 ### Scenario 2: Production EKS Cluster
-This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl. 
+This section is for you if you want to run Aqua in a production EKS cluster. It can be an existing cluster or you can choose to Note: You can spin up a [new cluster](#3-create-an-EKS-cluster) easily using eksctl. 
 
 A production-grade Aqua CSP deployment requires a managed Postgres database installation like Amazon RDS. [Click here](#1-RDS-requirements) for RDS requirements. (We also provide a CloudFormation template in the deployment instructions)
 
@@ -130,7 +130,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   ### Deployment instructions
   
   #### 1. Access the EKS cluster
-  Work on an existing EKS cluster or Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
+  Work on an existing EKS cluster or Note: You can spin up a [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
   Get the kubeconfig file
   ```shell
   eksctl utils write-kubeconfig --cluster=<name> [--kubeconfig=<path>][--set-kubeconfig-context=<bool>]
@@ -140,6 +140,8 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
 
   [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
+
+  >Note the values for the RDS Endpoint URL and port from the CloudFormation Outputs
 
   #### 3. Deploy Aqua CSP
   The aquactl utility provides an interactive experience that allows you to configure the CSP installation
@@ -178,7 +180,7 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   
   
   #### 1. Access the Workload EKS cluster
-  Work on an existing EKS cluster or Note: You can spin up [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
+  Work on an existing EKS cluster or Note: You can spin up a [new cluster](#3-create-an-EKS-cluster) easily using eksctl.
   
   Get the kubeconfig file
   ```shell
@@ -189,29 +191,75 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
   Use this CloudFormation template to create a managed RDS Postgres instance for Aqua CSP. 
   
   [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=aqua-rds&templateURL=https://aqua-security-public.s3.amazonaws.com/AquaRDS.yaml)
-
+  
+  >Note the values for the RDS Endpoint URL and port from the CloudFormation Outputs
 
   #### 3. Deploy Aqua CSP
   The aquactl utility provides an interactive experience that allows you to configure the CSP installation. For multi-cluster environments, we need to expose the Aqua Gateway service as a LoadBalancer.
+
+  Set the right cluster context
+  ```shell
+  kubectl config use-context manasi.prabhavalkar@aquasec.com@Aqua-cluster.us-east-1.eksctl.io
+  ```
+  ![kubectl output](images/kubectl-aqua-context.png)
+
   ```shell
   aquactl deploy csp --gateway-service LoadBalancer
   ```
   Here's an example of how the output looks like:
   ![aquactl output](images/aquactl-multiCluster.png)
 
-  #### 3. Verify Deployment
-  You can verify the deployment by checking the aqua namespace on your EKS cluster. It might take several minutes for the External IP to get populated and the web interface to come live.
+  #### 4. Deploy Aqua Enforcers on the Workload cluster
+  The aquactl utility provides an interactive experience that allows you to configure your workload clusters with enforcers.
+  
+  Set the right cluster context
   ```shell
+  kubectl config use-context manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io
+  ```
+  ![kubectl output](images/kubectl-workload-context.png)
+
+  ```shell
+  aquactl deploy enforcer
+  ```
+  Here's an example of how the output looks like:
+  ![aquactl output](images/aquactl-multiCluster-enforcer.png)
+
+  #### 5. Verify Deployment
+  You can verify the deployment by checking the aqua namespace on your EKS cluster. It might take several minutes for the External IP to get populated and the web interface to come live.
+
+  On the Aqua cluster
+  ```shell
+  kubectl config get-contexts
+  CURRENT   NAME                                                                   CLUSTER                                AUTHINFO                                                               NAMESPACE
+            aws                                                                    kubernetes                             aws
+  *         manasi.prabhavalkar@aquasec.com@Aqua-cluster.us-east-1.eksctl.io       Aqua-cluster.us-east-1.eksctl.io       manasi.prabhavalkar@aquasec.com@Aqua-cluster.us-east-1.eksctl.io
+            manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io   Workload-cluster.us-east-1.eksctl.io   manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io
+  
   $kubectl get deploy -n aqua
   NAME           READY   UP-TO-DATE   AVAILABLE   AGE
-  aqua-gateway   1/1     1            1           4m33s
-  aqua-web       1/1     1            1           4m33s
-
+  aqua-gateway   1/1     1            1           6m58s
+  aqua-web       1/1     1            1           6m58s
+  
   $kubectl get svc -n aqua
-  NAME           TYPE           CLUSTER-IP      EXTERNAL-IP                                                               PORT(S)                         AGE
-  aqua-gateway   LoadBalancer   10.100.38.65    ad0da4fc6eb274a7d9b51ebb5c9c8edf-1369921645.us-east-1.elb.amazonaws.com   8443:32505/TCP,3622:30392/TCP   4m38s
-  aqua-web       LoadBalancer   10.100.111.78   a0c6db5b2c6e4418790c478f17f9453e-159603438.us-east-1.elb.amazonaws.com    443:31283/TCP,8080:31222/TCP    4m38s
+  NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                         AGE
+  aqua-gateway   LoadBalancer   10.100.202.206   ab8dee9b761c649558df166d461e304d-837941486.us-east-1.elb.amazonaws.com   8443:30404/TCP,3622:32237/TCP   7m4s
+  aqua-web       LoadBalancer   10.100.204.208   a0f8c7f711c6c43ac82d67df9cd26772-911460374.us-east-1.elb.amazonaws.com   443:31938/TCP,8080:30702/TCP    7m4s
   ```
+
+  On the workload cluster
+  ```shell
+  $kubectl config use-context manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io
+  Switched to context "manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io".
+
+  kubectl config get-contexts
+  CURRENT   NAME                                                                   CLUSTER                                AUTHINFO                                                               NAMESPACE
+            aws                                                                    kubernetes                             aws
+            manasi.prabhavalkar@aquasec.com@Aqua-cluster.us-east-1.eksctl.io       Aqua-cluster.us-east-1.eksctl.io       manasi.prabhavalkar@aquasec.com@Aqua-cluster.us-east-1.eksctl.io
+  *         manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io   Workload-cluster.us-east-1.eksctl.io   manasi.prabhavalkar@aquasec.com@Workload-cluster.us-east-1.eksctl.io
+
+  $kubectl get ds -n aqua
+  NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+  aqua-agent   2         2         2       2            2           <none>          40s
 
 </details>
 
