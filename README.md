@@ -1,7 +1,6 @@
 # Aqua Cloud Native Security Platform (CSP) for Amazon EKS
 Before you begin, make sure you have a AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
-
 Aqua EKS BYOL listing enables you to add security capabilities to your existing cloud-native workloads on EKS cluster environment. Aqua replaces outdated signature-based approaches with modern controls that leverage the cloud-native principles of immutability, microservices and portability.
 
 Installation is simple, as Cloud Native apps should be! There are minimal prerequisites to attend to in order to deploy Aqua CSP on Amazon EKS as defined below.
@@ -50,9 +49,8 @@ This installation needs an existing Aqua CSP license as well as the registry cre
 Aquactl is a command-line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
 You can get the latest [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl) binary and make it executable.
 
-Linux: https://get.aquasec.com/aquactl/stable/aquactl
-
-MacOS: https://get.aquasec.com/aquactl/mac/stable/aquactl
+>Linux: https://get.aquasec.com/aquactl/stable/aquactl
+>MacOS: https://get.aquasec.com/aquactl/mac/stable/aquactl
 
 ```shell
 wget https://get.aquasec.com/aquactl/stable/aquactl
