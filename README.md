@@ -1,21 +1,16 @@
-# Aqua Container Security Platform (CSP) for Amazon EKS
-This document is for Aqua CSP version 4.6.20099. Before you begin, make sure you have a AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
+# Aqua Cloud Native Security Platform (CSP) for Amazon EKS
+Before you begin, make sure you have a AWS Marketplace Subscription to the [Aqua CSP EKS offer.](https://aws.amazon.com/marketplace/pp/B07KCNBW7B)
 
 
 Aqua EKS BYOL listing enables you to add security capabilities to your existing cloud-native workloads on EKS cluster environment. Aqua replaces outdated signature-based approaches with modern controls that leverage the cloud-native principles of immutability, microservices and portability.
 
-This GitHub repo retains the helm charts for Aqua Security's AWS EKS Marketplace offering. This readme includes reference documentation regarding installation and removals while operating within AWS EKS.
+Installation is simple, as Cloud Native apps should be! There are minimal prerequisites to attend to in order to deploy Aqua CSP on Amazon EKS as defined below.
 
-Installation is simple, as Cloud Native apps should be! There are minimal prerequisites to attend to in order to deploy Aqua CSP on AWS EKS as defined below.
-
->**A word about Helm**
->
->This is a basic deployment guide and not intended to cover all installation variations.
->While Helm is a very easy tool to use, *Helm is not required.* Many other installation variations are available to customers with an `https://my.aquasec.com` account. Cloud Marketplace specific documentation is located at `https://cloud-market-docs.aquasec.com`
+Many other installation variations are available to customers with an `https://my.aquasec.com` account. Cloud Marketplace specific documentation is located at `https://cloud-market-docs.aquasec.com`
 
 ## Contents
 
-- [Deployment considerations](#Deployment-considerations)
+- [Prerequisites](#Prerequisites)
   - [EKS cluster](#1-EKS-cluster-environment)
   - [AWS CLI](#2-Install-AWS-CLI)
   - [Aqua License](#3-Aqua-license-and-registry-credentials)
@@ -38,7 +33,7 @@ Installation is simple, as Cloud Native apps should be! There are minimal prereq
 - [Support](#support)
 - [Appendix](#appendix)
 
-## Deployment considerations
+## Prerequisites
 
 #### 1. EKS cluster environment
 Aqua can be deployed on an existing EKS cluster to secure your running workload or you can choose to deploy Aqua on a separate EKS environment than that of the workloads.
@@ -54,13 +49,16 @@ This installation needs an existing Aqua CSP license as well as the registry cre
 #### 4. Install Aquactl
 Aquactl is a command-line tool that provides a wide variety of functionality related to Aqua CSP deployment and operation.
 You can get the latest [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl) binary and make it executable.
+Linux: https://get.aquasec.com/aquactl/stable/aquactl
+MacOS: https://get.aquasec.com/aquactl/mac/stable/aquactl
 ```shell
+wget https://get.aquasec.com/aquactl/stable/aquactl
 chmod +x aquactl
 ```
 
 #### 5. Database Options
 
-This helm chart includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#1-rds-requirements)
+The aquactl deployment includes an Aqua provided PostgreSQL database container for small environments and/or testing scenarios. For production deployments Aqua recommends implementing a dedicated managed database such as Amazon RDS. Please refer to [RDS requirements](#1-rds-requirements)
 
 
 ## Deployment Scenarios 
@@ -109,6 +107,10 @@ This section is for you if you want to get started with Aqua and hit the ground 
   aqua-db        1/1     1            1           18m
   aqua-gateway   1/1     1            1           18m
   aqua-web       1/1     1            1           18m
+  
+  $kubectl get ds -n aqua
+  NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+  aqua-agent   2         2         2       2            2           <none>          40s
 
   $kubectl get svc -n aqua
   NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                        AGE
@@ -159,6 +161,10 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   aqua-gateway   1/1     1            1           4m43s
   aqua-web       1/1     1            1           4m43s
 
+  $kubectl get ds -n aqua
+  NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+  aqua-agent   2         2         2       2            2           <none>          40s
+  
   $kubectl get svc -n aqua
   NAME           TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                        AGE
   aqua-gateway   ClusterIP      10.100.195.172   <none>                                                                    8443/TCP,3622/TCP              4m45s
@@ -265,7 +271,7 @@ Since now multiple cloud-native environments are communicating back to Aqua, the
 
 ## Verify Deployment
 
-Helm will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximately five minutes. The time-consuming part of the deployment is the ELB recognizing the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possible in the AWS EC2 console. The AWS CLI counterpart may be used to poll status as well.
+Aquactl will deploy the Aqua Command Center and accompanying Aqua Enforcers set to audit mode. This process takes approximately five minutes. The time-consuming part of the deployment is the ELB recognizing the containers are available after the deployment. Watching the ELB status in AWS EC2 console is possible in the AWS EC2 console. The AWS CLI counterpart may be used to poll status as well.
 
 ```shell
 EKSELB=$(kubectl get svc aqua-web --namespace aqua -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"|sed 's/-.*//')
