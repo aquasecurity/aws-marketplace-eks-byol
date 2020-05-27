@@ -521,7 +521,7 @@ A production-grade Aqua CSP deployment requires a managed Postgres database inst
   6. Multi-AZ deployment: enabled/disabled based on the environment
   7. Connectivity: For multi-cluster deployments, make RDS publicly accessible else deploy it in the same VPC
   ```
-
+![RDS CloudFormation Template](images/RDS-CF.png)
 ### 2. Extend EKS with an EBS supported StorageClass
 
 If you are deploying EKS clusters with Kubernetes version above 1.11, this step is unnecessary.
