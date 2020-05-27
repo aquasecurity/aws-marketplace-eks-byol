@@ -50,6 +50,7 @@ Aquactl is a command-line tool that provides a wide variety of functionality rel
 You can get the latest [aquactl](https://docs.aquasec.com/docs/aquactl-functions-and-usage#section-download-aquactl) binary and make it executable.
 
 >Linux: https://get.aquasec.com/aquactl/stable/aquactl
+
 >MacOS: https://get.aquasec.com/aquactl/mac/stable/aquactl
 
 ```shell
