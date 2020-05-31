@@ -5,7 +5,7 @@ Aqua EKS BYOL listing enables you to add security capabilities to your existing 
 
 Installation is simple, as Cloud Native apps should be! There are minimal prerequisites to attend to in order to deploy Aqua CSP on Amazon EKS as defined below.
 
-Many other installation variations are available to customers with an `https://my.aquasec.com` account. Cloud Marketplace specific documentation is located at `https://cloud-market-docs.aquasec.com`
+Many other installation variations are available to customers with an `https://my.aquasec.com` account.
 
 ## Contents
 
